@@ -1,4 +1,4 @@
-import { Mountain } from 'lucide-react'
+import { DeerHead } from '@/components/icons/deer-head'
 
 export function PublicFooter() {
   return (
@@ -7,7 +7,7 @@ export function PublicFooter() {
         <div className="grid md:grid-cols-3 gap-8">
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <Mountain className="h-6 w-6 text-emerald-400" />
+              <DeerHead className="h-6 w-6 text-emerald-400" />
               <span className="text-lg font-bold">Ten Point Properties</span>
             </div>
             <p className="text-slate-400 text-sm">

@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { DashboardCalendar } from '@/components/calendar/dashboard-calendar'
+import { UpcomingTasks } from '@/components/dashboard/upcoming-tasks'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Calendar, Users, Building2, DollarSign } from 'lucide-react'
 
@@ -87,6 +88,9 @@ export default async function DashboardPage() {
           </Card>
         ))}
       </div>
+
+      {/* To Do This Week */}
+      <UpcomingTasks />
 
       {/* Calendar */}
       <Card>

@@ -5,7 +5,6 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import {
   Calendar,
-  Home,
   Users,
   Wrench,
   Settings,
@@ -13,9 +12,9 @@ import {
   DollarSign,
   LogOut,
   Menu,
-  X,
   MessageSquare,
 } from 'lucide-react'
+import { DeerHead } from '@/components/icons/deer-head'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
@@ -57,7 +56,7 @@ export function MobileNav() {
           {/* Logo */}
           <div className="flex h-16 items-center justify-between px-6 border-b border-slate-700">
             <div className="flex items-center gap-2">
-              <Home className="h-8 w-8 text-emerald-500" />
+              <DeerHead className="h-8 w-8 text-emerald-500" />
               <span className="text-lg font-bold text-white">Ten Point</span>
             </div>
           </div>

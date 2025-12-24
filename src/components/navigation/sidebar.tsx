@@ -4,7 +4,6 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   Calendar,
-  Home,
   Users,
   Wrench,
   Settings,
@@ -13,6 +12,7 @@ import {
   LogOut,
   MessageSquare,
 } from 'lucide-react'
+import { DeerHead } from '@/components/icons/deer-head'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { createClient } from '@/lib/supabase/client'
@@ -43,7 +43,7 @@ export function Sidebar() {
     <div className="flex h-full w-64 flex-col bg-slate-900">
       {/* Logo */}
       <div className="flex h-16 items-center gap-2 px-6">
-        <Home className="h-8 w-8 text-emerald-500" />
+        <DeerHead className="h-8 w-8 text-emerald-500" />
         <span className="text-lg font-bold text-white">Ten Point</span>
       </div>
 

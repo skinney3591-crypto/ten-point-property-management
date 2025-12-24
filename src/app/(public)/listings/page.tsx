@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { PropertyCard } from '@/components/public/property-card'
-import { Mountain } from 'lucide-react'
+import { DeerHead } from '@/components/icons/deer-head'
 
 export const metadata = {
   title: 'Montana Vacation Rentals | Ten Point Properties',
@@ -25,7 +25,7 @@ export default async function ListingsPage() {
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-emerald-800 to-emerald-950 text-white py-20">
         <div className="container mx-auto px-4 text-center">
-          <Mountain className="h-16 w-16 mx-auto mb-6 text-emerald-300" />
+          <DeerHead className="h-16 w-16 mx-auto mb-6 text-emerald-300" />
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
             Montana Vacation Rentals
           </h1>
@@ -60,7 +60,7 @@ export default async function ListingsPage() {
             </div>
           ) : (
             <div className="text-center py-16">
-              <Mountain className="h-16 w-16 mx-auto mb-4 text-slate-300" />
+              <DeerHead className="h-16 w-16 mx-auto mb-4 text-slate-300" />
               <h3 className="text-xl font-semibold text-slate-600 mb-2">
                 No properties available yet
               </h3>
