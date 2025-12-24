@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Checkbox } from '@/components/ui/checkbox'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import type { Property } from '@/types/database'
@@ -35,6 +36,9 @@ interface FormData {
   house_rules: string
   airbnb_ical_url: string
   vrbo_ical_url: string
+  is_public: boolean
+  nightly_rate: string
+  photos: string
 }
 
 export function EditPropertyDialog({
@@ -49,6 +53,8 @@ export function EditPropertyDialog({
   const {
     register,
     handleSubmit,
+    watch,
+    setValue,
     formState: { errors },
   } = useForm<FormData>({
     defaultValues: {
@@ -60,11 +66,22 @@ export function EditPropertyDialog({
       house_rules: property.house_rules || '',
       airbnb_ical_url: property.airbnb_ical_url || '',
       vrbo_ical_url: property.vrbo_ical_url || '',
+      is_public: (property as any).is_public || false,
+      nightly_rate: (property as any).nightly_rate?.toString() || '',
+      photos: ((property as any).photos || []).join('\n'),
     },
   })
 
+  const isPublic = watch('is_public')
+
   const onSubmit = async (data: FormData) => {
     setLoading(true)
+
+    // Parse photos from newline-separated string to array
+    const photosArray = data.photos
+      .split('\n')
+      .map(url => url.trim())
+      .filter(url => url.length > 0)
 
     const updates = {
       name: data.name,
@@ -75,6 +92,9 @@ export function EditPropertyDialog({
       house_rules: data.house_rules || null,
       airbnb_ical_url: data.airbnb_ical_url || null,
       vrbo_ical_url: data.vrbo_ical_url || null,
+      is_public: data.is_public,
+      nightly_rate: data.nightly_rate ? parseFloat(data.nightly_rate) : null,
+      photos: photosArray,
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -107,10 +127,11 @@ export function EditPropertyDialog({
 
         <form onSubmit={handleSubmit(onSubmit)}>
           <Tabs defaultValue="basic" className="mt-4">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="basic">Basic Info</TabsTrigger>
               <TabsTrigger value="details">Details</TabsTrigger>
               <TabsTrigger value="sync">Calendar Sync</TabsTrigger>
+              <TabsTrigger value="public">Public Listing</TabsTrigger>
             </TabsList>
 
             <TabsContent value="basic" className="space-y-4 pt-4">
@@ -206,6 +227,55 @@ export function EditPropertyDialog({
                   placeholder="https://www.vrbo.com/icalendar/..."
                   {...register('vrbo_ical_url')}
                 />
+              </div>
+            </TabsContent>
+
+            <TabsContent value="public" className="space-y-4 pt-4">
+              <div className="rounded-lg border bg-muted/50 p-4">
+                <h4 className="font-medium">Public Listing Settings</h4>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Enable this property to appear on your public listings page
+                  where potential guests can browse and submit inquiries.
+                </p>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="edit-is_public"
+                  checked={isPublic}
+                  onCheckedChange={(checked) => setValue('is_public', !!checked)}
+                />
+                <Label htmlFor="edit-is_public" className="cursor-pointer">
+                  Show on public listings page
+                </Label>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="edit-nightly_rate">Nightly Rate ($)</Label>
+                <Input
+                  id="edit-nightly_rate"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  placeholder="250.00"
+                  {...register('nightly_rate')}
+                />
+                <p className="text-sm text-muted-foreground">
+                  Displayed on the public listing. Leave blank to hide pricing.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="edit-photos">Photo URLs</Label>
+                <Textarea
+                  id="edit-photos"
+                  placeholder="https://example.com/photo1.jpg&#10;https://example.com/photo2.jpg"
+                  rows={5}
+                  {...register('photos')}
+                />
+                <p className="text-sm text-muted-foreground">
+                  Enter one photo URL per line. The first photo will be the main image.
+                </p>
               </div>
             </TabsContent>
           </Tabs>

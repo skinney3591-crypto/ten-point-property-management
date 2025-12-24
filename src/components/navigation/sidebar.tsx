@@ -11,6 +11,7 @@ import {
   Building2,
   DollarSign,
   LogOut,
+  MessageSquare,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -21,6 +22,7 @@ const navigation = [
   { name: 'Dashboard', href: '/', icon: Calendar },
   { name: 'Properties', href: '/properties', icon: Building2 },
   { name: 'Guests', href: '/guests', icon: Users },
+  { name: 'Inquiries', href: '/inquiries', icon: MessageSquare },
   { name: 'Maintenance', href: '/maintenance', icon: Wrench },
   { name: 'Financials', href: '/financials', icon: DollarSign },
   { name: 'Settings', href: '/settings', icon: Settings },
