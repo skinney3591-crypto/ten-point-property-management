@@ -1,0 +1,43 @@
+{
+  "name": "Ten Point Property Management",
+  "short_name": "Ten Point",
+  "description": "Vacation rental property management platform",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#0f172a",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "productivity"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "url": "/",
+      "description": "View calendar and overview"
+    },
+    {
+      "name": "Properties",
+      "url": "/properties",
+      "description": "Manage your properties"
+    },
+    {
+      "name": "Guests",
+      "url": "/guests",
+      "description": "View guest information"
+    }
+  ]
+}
