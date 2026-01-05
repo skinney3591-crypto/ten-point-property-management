@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
+// import { redirect } from 'next/navigation' // TEMPORARILY DISABLED FOR DEMO
 import { DashboardCalendar } from '@/components/calendar/dashboard-calendar'
 import { UpcomingTasks } from '@/components/dashboard/upcoming-tasks'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -8,13 +8,14 @@ import { Calendar, Users, Building2, DollarSign } from 'lucide-react'
 export default async function DashboardPage() {
   const supabase = await createClient()
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  // TEMPORARILY DISABLED FOR DEMO
+  // const {
+  //   data: { user },
+  // } = await supabase.auth.getUser()
 
-  if (!user) {
-    redirect('/login')
-  }
+  // if (!user) {
+  //   redirect('/login')
+  // }
 
   // Fetch summary stats
   const [

@@ -37,25 +37,26 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
+  // TEMPORARILY DISABLED FOR DEMO - Remove auth requirement
   // Protected routes - redirect to login if not authenticated
-  const isProtectedRoute = request.nextUrl.pathname.startsWith('/dashboard') ||
-    request.nextUrl.pathname.startsWith('/properties') ||
-    request.nextUrl.pathname.startsWith('/guests') ||
-    request.nextUrl.pathname.startsWith('/maintenance') ||
-    request.nextUrl.pathname.startsWith('/settings')
+  // const isProtectedRoute = request.nextUrl.pathname.startsWith('/dashboard') ||
+  //   request.nextUrl.pathname.startsWith('/properties') ||
+  //   request.nextUrl.pathname.startsWith('/guests') ||
+  //   request.nextUrl.pathname.startsWith('/maintenance') ||
+  //   request.nextUrl.pathname.startsWith('/settings')
 
-  if (isProtectedRoute && !user) {
-    const url = request.nextUrl.clone()
-    url.pathname = '/login'
-    return NextResponse.redirect(url)
-  }
+  // if (isProtectedRoute && !user) {
+  //   const url = request.nextUrl.clone()
+  //   url.pathname = '/login'
+  //   return NextResponse.redirect(url)
+  // }
 
   // Redirect logged-in users away from login page
-  if (request.nextUrl.pathname === '/login' && user) {
-    const url = request.nextUrl.clone()
-    url.pathname = '/'
-    return NextResponse.redirect(url)
-  }
+  // if (request.nextUrl.pathname === '/login' && user) {
+  //   const url = request.nextUrl.clone()
+  //   url.pathname = '/'
+  //   return NextResponse.redirect(url)
+  // }
 
   return supabaseResponse
 }
