@@ -1,5 +1,6 @@
 -- Ten Point Property Management - Test Data Seed
 -- Run this in Supabase SQL Editor after logging in once
+-- Creates comprehensive test data for the past 3 months and upcoming 2 months
 
 -- Get the first user ID (you should have logged in at least once)
 DO $$
@@ -20,9 +21,15 @@ DECLARE
   v_guest8_id UUID := gen_random_uuid();
   v_guest9_id UUID := gen_random_uuid();
   v_guest10_id UUID := gen_random_uuid();
+  v_guest11_id UUID := gen_random_uuid();
+  v_guest12_id UUID := gen_random_uuid();
+  v_guest13_id UUID := gen_random_uuid();
+  v_guest14_id UUID := gen_random_uuid();
+  v_guest15_id UUID := gen_random_uuid();
   v_vendor1_id UUID := gen_random_uuid();
   v_vendor2_id UUID := gen_random_uuid();
   v_vendor3_id UUID := gen_random_uuid();
+  v_vendor4_id UUID := gen_random_uuid();
 BEGIN
   -- Get user ID from auth.users
   SELECT id INTO v_user_id FROM auth.users LIMIT 1;
@@ -77,15 +84,16 @@ BEGIN
    '["https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?w=800", "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800"]'::jsonb);
 
   -- =====================
-  -- VENDORS
+  -- VENDORS (External contractors only - Ten Point handles cleaning internally)
   -- =====================
   INSERT INTO vendors (id, user_id, name, service_type, email, phone, notes) VALUES
-  (v_vendor1_id, v_user_id, 'Mountain Clean Co', 'cleaning', 'info@mountainclean.com', '(406) 555-0101', 'Primary cleaning service. $150 per turnover for cabins, $250 for lodges.'),
-  (v_vendor2_id, v_user_id, 'Big Sky Landscaping', 'landscaping', 'bigsky@landscape.com', '(406) 555-0202', 'Weekly lawn care in summer, snow removal in winter. $200/month base.'),
-  (v_vendor3_id, v_user_id, 'Hot Tub Pros Montana', 'pool', 'service@hottubpros.com', '(406) 555-0303', 'Hot tub maintenance and repair. $75 per service call.');
+  (v_vendor1_id, v_user_id, 'Big Sky Landscaping', 'landscaping', 'bigsky@landscape.com', '(406) 555-0202', 'Weekly lawn care in summer, snow removal in winter. $200/month base.'),
+  (v_vendor2_id, v_user_id, 'Hot Tub Pros Montana', 'pool', 'service@hottubpros.com', '(406) 555-0303', 'Hot tub maintenance and repair. $75 per service call.'),
+  (v_vendor3_id, v_user_id, 'Whitefish Plumbing & Electric', 'repair', 'info@whitefishpe.com', '(406) 555-0404', 'Licensed plumber and electrician. Emergency service available.'),
+  (v_vendor4_id, v_user_id, 'Montana Pest Control', 'other', 'bugs@mtpest.com', '(406) 555-0505', 'Quarterly pest prevention. $125 per property per visit.');
 
   -- =====================
-  -- GUESTS (10 guests)
+  -- GUESTS (15 guests for more variety)
   -- =====================
   INSERT INTO guests (id, user_id, email, name, phone, notes, preferences) VALUES
   (v_guest1_id, v_user_id, 'johnson.family@email.com', 'Michael Johnson', '(303) 555-1234', 'Repeat guest, very respectful. Loves fly fishing.', '{"dietary": "none", "room_temp": "cool"}'::jsonb),
@@ -97,146 +105,306 @@ BEGIN
   (v_guest7_id, v_user_id, 'james.wilson@email.com', 'James Wilson', '(602) 555-7890', 'Corporate retreat organizer. Books for team events.', '{"corporate": true, "catering": "sometimes"}'::jsonb),
   (v_guest8_id, v_user_id, 'amanda.brown@email.com', 'Amanda Brown', '(801) 555-8901', 'Yoga retreat leader. Needs quiet spaces.', '{"wellness": true, "quiet_hours": "important"}'::jsonb),
   (v_guest9_id, v_user_id, 'kevin.oreilly@email.com', 'Kevin O''Reilly', '(406) 555-9012', 'Local Montana resident. Books for visiting family.', '{"local": true, "discount": "repeat"}'::jsonb),
-  (v_guest10_id, v_user_id, 'garcia.reunion@email.com', 'Maria Garcia', '(505) 555-0123', 'Annual family reunion organizer. 15-20 people.', '{"reunion": true, "large_group": true}'::jsonb);
+  (v_guest10_id, v_user_id, 'garcia.reunion@email.com', 'Maria Garcia', '(505) 555-0123', 'Annual family reunion organizer. 15-20 people.', '{"reunion": true, "large_group": true}'::jsonb),
+  (v_guest11_id, v_user_id, 'alex.turner@email.com', 'Alex Turner', '(425) 555-1122', 'Remote worker, needs reliable WiFi. Extended stays.', '{"remote_work": true, "long_stay": true}'::jsonb),
+  (v_guest12_id, v_user_id, 'nancy.drew@email.com', 'Nancy Drew', '(303) 555-2233', 'Mystery writer. Loves secluded properties for writing retreats.', '{"quiet": true, "workspace": "important"}'::jsonb),
+  (v_guest13_id, v_user_id, 'bill.harris@email.com', 'Bill Harris', '(480) 555-3344', 'Retired couple. Birdwatching enthusiasts.', '{"birdwatching": true, "early_morning": true}'::jsonb),
+  (v_guest14_id, v_user_id, 'kate.murphy@email.com', 'Kate Murphy', '(971) 555-4455', 'Young professional group. Weekend getaways.', '{"group": true, "nightlife": false}'::jsonb),
+  (v_guest15_id, v_user_id, 'chris.baker@email.com', 'Chris Baker', '(385) 555-5566', 'Snowmobiling group. Winter bookings mostly.', '{"winter_sports": true, "garage": "needed"}'::jsonb);
 
   -- =====================
-  -- BOOKINGS (Past Year - ~40 bookings spread across properties)
+  -- BOOKINGS - Past 3 months and next 2 months (heavy booking activity)
   -- =====================
 
-  -- Mountain View Lodge bookings
+  -- MOUNTAIN VIEW LODGE - Past bookings
   INSERT INTO bookings (property_id, guest_id, source, check_in, check_out, status, nightly_rate, cleaning_fee, total_amount, platform_fee, payout_amount, notes) VALUES
-  (v_prop1_id, v_guest1_id, 'airbnb', CURRENT_DATE - INTERVAL '340 days', CURRENT_DATE - INTERVAL '335 days', 'checked_out', 395.00, 200.00, 2175.00, 217.50, 1957.50, 'Great guests, left property spotless'),
-  (v_prop1_id, v_guest3_id, 'vrbo', CURRENT_DATE - INTERVAL '300 days', CURRENT_DATE - INTERVAL '293 days', 'checked_out', 425.00, 200.00, 3175.00, 285.75, 2889.25, 'Ski trip group, 10 guests'),
-  (v_prop1_id, v_guest6_id, 'direct', CURRENT_DATE - INTERVAL '250 days', CURRENT_DATE - INTERVAL '245 days', 'checked_out', 400.00, 200.00, 2200.00, 0.00, 2200.00, 'Family with kids, very happy'),
-  (v_prop1_id, v_guest7_id, 'airbnb', CURRENT_DATE - INTERVAL '200 days', CURRENT_DATE - INTERVAL '197 days', 'checked_out', 450.00, 200.00, 1550.00, 155.00, 1395.00, 'Corporate retreat'),
-  (v_prop1_id, v_guest10_id, 'vrbo', CURRENT_DATE - INTERVAL '150 days', CURRENT_DATE - INTERVAL '143 days', 'checked_out', 425.00, 200.00, 3175.00, 285.75, 2889.25, 'Family reunion - 18 people'),
-  (v_prop1_id, v_guest1_id, 'direct', CURRENT_DATE - INTERVAL '90 days', CURRENT_DATE - INTERVAL '85 days', 'checked_out', 425.00, 200.00, 2325.00, 0.00, 2325.00, 'Repeat guest - fishing trip'),
-  (v_prop1_id, v_guest4_id, 'airbnb', CURRENT_DATE - INTERVAL '45 days', CURRENT_DATE - INTERVAL '42 days', 'checked_out', 450.00, 200.00, 1550.00, 155.00, 1395.00, 'Photography workshop'),
-  (v_prop1_id, v_guest3_id, 'vrbo', CURRENT_DATE + INTERVAL '15 days', CURRENT_DATE + INTERVAL '22 days', 'confirmed', 475.00, 200.00, 3525.00, 317.25, 3207.75, 'Annual ski trip - returning group');
+  (v_prop1_id, v_guest3_id, 'vrbo', CURRENT_DATE - INTERVAL '85 days', CURRENT_DATE - INTERVAL '78 days', 'checked_out', 425.00, 250.00, 3225.00, 290.25, 2934.75, 'Ski group - 10 people, great guests'),
+  (v_prop1_id, v_guest10_id, 'airbnb', CURRENT_DATE - INTERVAL '71 days', CURRENT_DATE - INTERVAL '64 days', 'checked_out', 450.00, 250.00, 3400.00, 340.00, 3060.00, 'Family reunion - house was full'),
+  (v_prop1_id, v_guest7_id, 'direct', CURRENT_DATE - INTERVAL '57 days', CURRENT_DATE - INTERVAL '54 days', 'checked_out', 475.00, 250.00, 1675.00, 0.00, 1675.00, 'Corporate team building'),
+  (v_prop1_id, v_guest1_id, 'airbnb', CURRENT_DATE - INTERVAL '50 days', CURRENT_DATE - INTERVAL '45 days', 'checked_out', 425.00, 250.00, 2375.00, 237.50, 2137.50, 'Repeat guest - fishing trip'),
+  (v_prop1_id, v_guest15_id, 'vrbo', CURRENT_DATE - INTERVAL '38 days', CURRENT_DATE - INTERVAL '33 days', 'checked_out', 450.00, 250.00, 2500.00, 225.00, 2275.00, 'Snowmobile group'),
+  (v_prop1_id, v_guest4_id, 'direct', CURRENT_DATE - INTERVAL '28 days', CURRENT_DATE - INTERVAL '25 days', 'checked_out', 425.00, 250.00, 1525.00, 0.00, 1525.00, 'Photography workshop'),
+  (v_prop1_id, v_guest6_id, 'airbnb', CURRENT_DATE - INTERVAL '21 days', CURRENT_DATE - INTERVAL '14 days', 'checked_out', 425.00, 250.00, 3225.00, 322.50, 2902.50, 'Family with kids - week stay'),
+  (v_prop1_id, v_guest11_id, 'vrbo', CURRENT_DATE - INTERVAL '10 days', CURRENT_DATE - INTERVAL '3 days', 'checked_out', 400.00, 250.00, 3050.00, 274.50, 2775.50, 'Remote worker extended stay');
 
-  -- Riverside Cabin bookings
+  -- MOUNTAIN VIEW LODGE - Current and upcoming
   INSERT INTO bookings (property_id, guest_id, source, check_in, check_out, status, nightly_rate, cleaning_fee, total_amount, platform_fee, payout_amount, notes) VALUES
-  (v_prop2_id, v_guest1_id, 'airbnb', CURRENT_DATE - INTERVAL '320 days', CURRENT_DATE - INTERVAL '315 days', 'checked_out', 250.00, 125.00, 1375.00, 137.50, 1237.50, 'Fly fishing trip'),
-  (v_prop2_id, v_guest5_id, 'direct', CURRENT_DATE - INTERVAL '280 days', CURRENT_DATE - INTERVAL '275 days', 'checked_out', 275.00, 125.00, 1500.00, 0.00, 1500.00, 'Honeymoon couple'),
-  (v_prop2_id, v_guest9_id, 'direct', CURRENT_DATE - INTERVAL '240 days', CURRENT_DATE - INTERVAL '237 days', 'checked_out', 250.00, 125.00, 875.00, 0.00, 875.00, 'Local booking - family visit'),
-  (v_prop2_id, v_guest4_id, 'vrbo', CURRENT_DATE - INTERVAL '180 days', CURRENT_DATE - INTERVAL '176 days', 'checked_out', 275.00, 125.00, 1225.00, 110.25, 1114.75, 'River photography'),
-  (v_prop2_id, v_guest8_id, 'airbnb', CURRENT_DATE - INTERVAL '120 days', CURRENT_DATE - INTERVAL '115 days', 'checked_out', 275.00, 125.00, 1500.00, 150.00, 1350.00, 'Solo wellness retreat'),
-  (v_prop2_id, v_guest1_id, 'direct', CURRENT_DATE - INTERVAL '60 days', CURRENT_DATE - INTERVAL '55 days', 'checked_out', 275.00, 125.00, 1500.00, 0.00, 1500.00, 'Return guest - more fishing'),
-  (v_prop2_id, v_guest2_id, 'airbnb', CURRENT_DATE - INTERVAL '20 days', CURRENT_DATE - INTERVAL '16 days', 'checked_out', 275.00, 125.00, 1225.00, 122.50, 1102.50, 'Quiet getaway'),
-  (v_prop2_id, v_guest5_id, 'vrbo', CURRENT_DATE + INTERVAL '30 days', CURRENT_DATE + INTERVAL '35 days', 'confirmed', 299.00, 125.00, 1620.00, 145.80, 1474.20, 'Anniversary trip');
+  (v_prop1_id, v_guest3_id, 'vrbo', CURRENT_DATE + INTERVAL '5 days', CURRENT_DATE + INTERVAL '12 days', 'confirmed', 475.00, 250.00, 3575.00, 321.75, 3253.25, 'Annual ski trip - returning group'),
+  (v_prop1_id, v_guest7_id, 'direct', CURRENT_DATE + INTERVAL '18 days', CURRENT_DATE + INTERVAL '21 days', 'confirmed', 450.00, 250.00, 1600.00, 0.00, 1600.00, 'Corporate retreat'),
+  (v_prop1_id, v_guest10_id, 'airbnb', CURRENT_DATE + INTERVAL '35 days', CURRENT_DATE + INTERVAL '42 days', 'confirmed', 425.00, 250.00, 3225.00, 322.50, 2902.50, 'Winter family reunion');
 
-  -- Big Sky Retreat bookings
+  -- RIVERSIDE CABIN - Past bookings
   INSERT INTO bookings (property_id, guest_id, source, check_in, check_out, status, nightly_rate, cleaning_fee, total_amount, platform_fee, payout_amount, notes) VALUES
-  (v_prop3_id, v_guest3_id, 'vrbo', CURRENT_DATE - INTERVAL '330 days', CURRENT_DATE - INTERVAL '323 days', 'checked_out', 850.00, 350.00, 6300.00, 567.00, 5733.00, 'Ski week - full house'),
-  (v_prop3_id, v_guest7_id, 'direct', CURRENT_DATE - INTERVAL '270 days', CURRENT_DATE - INTERVAL '266 days', 'checked_out', 895.00, 350.00, 3930.00, 0.00, 3930.00, 'Corporate retreat - 12 people'),
-  (v_prop3_id, v_guest10_id, 'airbnb', CURRENT_DATE - INTERVAL '210 days', CURRENT_DATE - INTERVAL '203 days', 'checked_out', 750.00, 350.00, 5600.00, 560.00, 5040.00, 'Summer family reunion'),
-  (v_prop3_id, v_guest3_id, 'vrbo', CURRENT_DATE - INTERVAL '100 days', CURRENT_DATE - INTERVAL '93 days', 'checked_out', 895.00, 350.00, 6615.00, 595.35, 6019.65, 'Early season ski'),
-  (v_prop3_id, v_guest7_id, 'direct', CURRENT_DATE - INTERVAL '35 days', CURRENT_DATE - INTERVAL '32 days', 'checked_out', 895.00, 350.00, 3035.00, 0.00, 3035.00, 'Team building event'),
-  (v_prop3_id, v_guest3_id, 'vrbo', CURRENT_DATE + INTERVAL '45 days', CURRENT_DATE + INTERVAL '52 days', 'confirmed', 950.00, 350.00, 7000.00, 630.00, 6370.00, 'Peak ski season booking');
+  (v_prop2_id, v_guest1_id, 'airbnb', CURRENT_DATE - INTERVAL '82 days', CURRENT_DATE - INTERVAL '77 days', 'checked_out', 275.00, 150.00, 1525.00, 152.50, 1372.50, 'Fly fishing trip'),
+  (v_prop2_id, v_guest5_id, 'direct', CURRENT_DATE - INTERVAL '68 days', CURRENT_DATE - INTERVAL '64 days', 'checked_out', 299.00, 150.00, 1346.00, 0.00, 1346.00, 'Romantic getaway'),
+  (v_prop2_id, v_guest12_id, 'vrbo', CURRENT_DATE - INTERVAL '55 days', CURRENT_DATE - INTERVAL '48 days', 'checked_out', 275.00, 150.00, 2075.00, 186.75, 1888.25, 'Writing retreat - 7 nights'),
+  (v_prop2_id, v_guest9_id, 'direct', CURRENT_DATE - INTERVAL '42 days', CURRENT_DATE - INTERVAL '39 days', 'checked_out', 275.00, 150.00, 975.00, 0.00, 975.00, 'Local booking'),
+  (v_prop2_id, v_guest8_id, 'airbnb', CURRENT_DATE - INTERVAL '35 days', CURRENT_DATE - INTERVAL '31 days', 'checked_out', 275.00, 150.00, 1250.00, 125.00, 1125.00, 'Solo retreat'),
+  (v_prop2_id, v_guest13_id, 'vrbo', CURRENT_DATE - INTERVAL '24 days', CURRENT_DATE - INTERVAL '19 days', 'checked_out', 275.00, 150.00, 1525.00, 137.25, 1387.75, 'Birdwatching couple'),
+  (v_prop2_id, v_guest1_id, 'direct', CURRENT_DATE - INTERVAL '14 days', CURRENT_DATE - INTERVAL '10 days', 'checked_out', 275.00, 150.00, 1250.00, 0.00, 1250.00, 'Return guest - more fishing'),
+  (v_prop2_id, v_guest14_id, 'airbnb', CURRENT_DATE - INTERVAL '7 days', CURRENT_DATE - INTERVAL '4 days', 'checked_out', 299.00, 150.00, 1047.00, 104.70, 942.30, 'Weekend getaway');
 
-  -- Paradise Valley Ranch bookings
+  -- RIVERSIDE CABIN - Upcoming
   INSERT INTO bookings (property_id, guest_id, source, check_in, check_out, status, nightly_rate, cleaning_fee, total_amount, platform_fee, payout_amount, notes) VALUES
-  (v_prop4_id, v_guest6_id, 'airbnb', CURRENT_DATE - INTERVAL '310 days', CURRENT_DATE - INTERVAL '305 days', 'checked_out', 325.00, 175.00, 1800.00, 180.00, 1620.00, 'Family adventure trip'),
-  (v_prop4_id, v_guest4_id, 'vrbo', CURRENT_DATE - INTERVAL '260 days', CURRENT_DATE - INTERVAL '256 days', 'checked_out', 350.00, 175.00, 1575.00, 141.75, 1433.25, 'Yellowstone photography'),
-  (v_prop4_id, v_guest2_id, 'direct', CURRENT_DATE - INTERVAL '220 days', CURRENT_DATE - INTERVAL '214 days', 'checked_out', 350.00, 175.00, 2275.00, 0.00, 2275.00, 'Multi-generational trip'),
-  (v_prop4_id, v_guest8_id, 'airbnb', CURRENT_DATE - INTERVAL '170 days', CURRENT_DATE - INTERVAL '164 days', 'checked_out', 350.00, 175.00, 2275.00, 227.50, 2047.50, 'Yoga retreat group'),
-  (v_prop4_id, v_guest6_id, 'vrbo', CURRENT_DATE - INTERVAL '110 days', CURRENT_DATE - INTERVAL '104 days', 'checked_out', 350.00, 175.00, 2275.00, 204.75, 2070.25, 'Return visit - kids loved horses'),
-  (v_prop4_id, v_guest9_id, 'direct', CURRENT_DATE - INTERVAL '50 days', CURRENT_DATE - INTERVAL '46 days', 'checked_out', 350.00, 175.00, 1575.00, 0.00, 1575.00, 'Local guest - Yellowstone trip'),
-  (v_prop4_id, v_guest4_id, 'airbnb', CURRENT_DATE - INTERVAL '10 days', CURRENT_DATE - INTERVAL '6 days', 'checked_out', 375.00, 175.00, 1675.00, 167.50, 1507.50, 'Fall photography'),
-  (v_prop4_id, v_guest2_id, 'vrbo', CURRENT_DATE + INTERVAL '60 days', CURRENT_DATE + INTERVAL '67 days', 'confirmed', 350.00, 175.00, 2625.00, 236.25, 2388.75, 'Holiday family gathering');
+  (v_prop2_id, v_guest5_id, 'vrbo', CURRENT_DATE + INTERVAL '3 days', CURRENT_DATE + INTERVAL '7 days', 'confirmed', 299.00, 150.00, 1346.00, 121.14, 1224.86, 'Anniversary trip'),
+  (v_prop2_id, v_guest12_id, 'direct', CURRENT_DATE + INTERVAL '14 days', CURRENT_DATE + INTERVAL '21 days', 'confirmed', 250.00, 150.00, 1900.00, 0.00, 1900.00, 'Extended writing retreat - discounted'),
+  (v_prop2_id, v_guest1_id, 'airbnb', CURRENT_DATE + INTERVAL '28 days', CURRENT_DATE + INTERVAL '32 days', 'confirmed', 275.00, 150.00, 1250.00, 125.00, 1125.00, 'Spring fishing');
 
-  -- Lakefront Hideaway bookings
+  -- BIG SKY RETREAT - Past bookings
   INSERT INTO bookings (property_id, guest_id, source, check_in, check_out, status, nightly_rate, cleaning_fee, total_amount, platform_fee, payout_amount, notes) VALUES
-  (v_prop5_id, v_guest6_id, 'airbnb', CURRENT_DATE - INTERVAL '290 days', CURRENT_DATE - INTERVAL '285 days', 'checked_out', 350.00, 150.00, 1900.00, 190.00, 1710.00, 'Summer lake vacation'),
-  (v_prop5_id, v_guest5_id, 'direct', CURRENT_DATE - INTERVAL '230 days', CURRENT_DATE - INTERVAL '225 days', 'checked_out', 375.00, 150.00, 2025.00, 0.00, 2025.00, 'Romantic getaway'),
-  (v_prop5_id, v_guest1_id, 'vrbo', CURRENT_DATE - INTERVAL '190 days', CURRENT_DATE - INTERVAL '184 days', 'checked_out', 375.00, 150.00, 2400.00, 216.00, 2184.00, 'Fishing and kayaking'),
-  (v_prop5_id, v_guest8_id, 'airbnb', CURRENT_DATE - INTERVAL '140 days', CURRENT_DATE - INTERVAL '135 days', 'checked_out', 375.00, 150.00, 2025.00, 202.50, 1822.50, 'Lakeside meditation retreat'),
-  (v_prop5_id, v_guest6_id, 'direct', CURRENT_DATE - INTERVAL '80 days', CURRENT_DATE - INTERVAL '73 days', 'checked_out', 375.00, 150.00, 2775.00, 0.00, 2775.00, 'End of summer trip'),
-  (v_prop5_id, v_guest9_id, 'vrbo', CURRENT_DATE - INTERVAL '30 days', CURRENT_DATE - INTERVAL '27 days', 'checked_out', 350.00, 150.00, 1200.00, 108.00, 1092.00, 'Quick local getaway'),
-  (v_prop5_id, v_guest1_id, 'airbnb', CURRENT_DATE + INTERVAL '90 days', CURRENT_DATE + INTERVAL '97 days', 'confirmed', 325.00, 150.00, 2425.00, 242.50, 2182.50, 'Ice fishing trip');
+  (v_prop3_id, v_guest3_id, 'vrbo', CURRENT_DATE - INTERVAL '88 days', CURRENT_DATE - INTERVAL '81 days', 'checked_out', 895.00, 400.00, 6665.00, 599.85, 6065.15, 'Peak ski week - full house'),
+  (v_prop3_id, v_guest7_id, 'direct', CURRENT_DATE - INTERVAL '74 days', CURRENT_DATE - INTERVAL '70 days', 'checked_out', 850.00, 400.00, 3800.00, 0.00, 3800.00, 'Corporate leadership retreat'),
+  (v_prop3_id, v_guest15_id, 'airbnb', CURRENT_DATE - INTERVAL '60 days', CURRENT_DATE - INTERVAL '55 days', 'checked_out', 895.00, 400.00, 4875.00, 487.50, 4387.50, 'Snowmobile group'),
+  (v_prop3_id, v_guest10_id, 'vrbo', CURRENT_DATE - INTERVAL '45 days', CURRENT_DATE - INTERVAL '38 days', 'checked_out', 895.00, 400.00, 6665.00, 599.85, 6065.15, 'Large family gathering'),
+  (v_prop3_id, v_guest3_id, 'direct', CURRENT_DATE - INTERVAL '31 days', CURRENT_DATE - INTERVAL '26 days', 'checked_out', 850.00, 400.00, 4650.00, 0.00, 4650.00, 'Return ski group - mid-week discount'),
+  (v_prop3_id, v_guest7_id, 'airbnb', CURRENT_DATE - INTERVAL '17 days', CURRENT_DATE - INTERVAL '14 days', 'checked_out', 895.00, 400.00, 3085.00, 308.50, 2776.50, 'Quick corporate getaway'),
+  (v_prop3_id, v_guest14_id, 'vrbo', CURRENT_DATE - INTERVAL '8 days', CURRENT_DATE - INTERVAL '5 days', 'checked_out', 895.00, 400.00, 3085.00, 277.65, 2807.35, 'Friend group ski trip');
+
+  -- BIG SKY RETREAT - Upcoming
+  INSERT INTO bookings (property_id, guest_id, source, check_in, check_out, status, nightly_rate, cleaning_fee, total_amount, platform_fee, payout_amount, notes) VALUES
+  (v_prop3_id, v_guest3_id, 'vrbo', CURRENT_DATE + INTERVAL '8 days', CURRENT_DATE + INTERVAL '15 days', 'confirmed', 950.00, 400.00, 7050.00, 634.50, 6415.50, 'Peak season booking'),
+  (v_prop3_id, v_guest15_id, 'airbnb', CURRENT_DATE + INTERVAL '22 days', CURRENT_DATE + INTERVAL '26 days', 'confirmed', 895.00, 400.00, 3980.00, 398.00, 3582.00, 'Snowmobile weekend'),
+  (v_prop3_id, v_guest7_id, 'direct', CURRENT_DATE + INTERVAL '40 days', CURRENT_DATE + INTERVAL '43 days', 'confirmed', 850.00, 400.00, 2950.00, 0.00, 2950.00, 'Spring corporate event');
+
+  -- PARADISE VALLEY RANCH - Past bookings
+  INSERT INTO bookings (property_id, guest_id, source, check_in, check_out, status, nightly_rate, cleaning_fee, total_amount, platform_fee, payout_amount, notes) VALUES
+  (v_prop4_id, v_guest6_id, 'airbnb', CURRENT_DATE - INTERVAL '80 days', CURRENT_DATE - INTERVAL '74 days', 'checked_out', 350.00, 200.00, 2300.00, 230.00, 2070.00, 'Family adventure - kids loved horses'),
+  (v_prop4_id, v_guest4_id, 'vrbo', CURRENT_DATE - INTERVAL '65 days', CURRENT_DATE - INTERVAL '61 days', 'checked_out', 350.00, 200.00, 1600.00, 144.00, 1456.00, 'Winter photography'),
+  (v_prop4_id, v_guest8_id, 'direct', CURRENT_DATE - INTERVAL '52 days', CURRENT_DATE - INTERVAL '46 days', 'checked_out', 325.00, 200.00, 2150.00, 0.00, 2150.00, 'Yoga retreat group'),
+  (v_prop4_id, v_guest2_id, 'airbnb', CURRENT_DATE - INTERVAL '40 days', CURRENT_DATE - INTERVAL '35 days', 'checked_out', 350.00, 200.00, 1950.00, 195.00, 1755.00, 'Multi-generational trip'),
+  (v_prop4_id, v_guest13_id, 'vrbo', CURRENT_DATE - INTERVAL '30 days', CURRENT_DATE - INTERVAL '26 days', 'checked_out', 350.00, 200.00, 1600.00, 144.00, 1456.00, 'Birdwatching near Yellowstone'),
+  (v_prop4_id, v_guest9_id, 'direct', CURRENT_DATE - INTERVAL '20 days', CURRENT_DATE - INTERVAL '17 days', 'checked_out', 350.00, 200.00, 1250.00, 0.00, 1250.00, 'Local - family visiting'),
+  (v_prop4_id, v_guest6_id, 'airbnb', CURRENT_DATE - INTERVAL '12 days', CURRENT_DATE - INTERVAL '7 days', 'checked_out', 375.00, 200.00, 2075.00, 207.50, 1867.50, 'Return family visit'),
+  (v_prop4_id, v_guest4_id, 'direct', CURRENT_DATE - INTERVAL '4 days', CURRENT_DATE - INTERVAL '1 day', 'checked_out', 350.00, 200.00, 1250.00, 0.00, 1250.00, 'Quick photo trip');
+
+  -- PARADISE VALLEY RANCH - Upcoming
+  INSERT INTO bookings (property_id, guest_id, source, check_in, check_out, status, nightly_rate, cleaning_fee, total_amount, platform_fee, payout_amount, notes) VALUES
+  (v_prop4_id, v_guest8_id, 'vrbo', CURRENT_DATE + INTERVAL '2 days', CURRENT_DATE + INTERVAL '6 days', 'confirmed', 350.00, 200.00, 1600.00, 144.00, 1456.00, 'Wellness retreat'),
+  (v_prop4_id, v_guest2_id, 'airbnb', CURRENT_DATE + INTERVAL '12 days', CURRENT_DATE + INTERVAL '17 days', 'confirmed', 350.00, 200.00, 1950.00, 195.00, 1755.00, 'Family trip'),
+  (v_prop4_id, v_guest6_id, 'direct', CURRENT_DATE + INTERVAL '25 days', CURRENT_DATE + INTERVAL '30 days', 'confirmed', 350.00, 200.00, 1950.00, 0.00, 1950.00, 'Spring break family trip');
+
+  -- LAKEFRONT HIDEAWAY - Past bookings
+  INSERT INTO bookings (property_id, guest_id, source, check_in, check_out, status, nightly_rate, cleaning_fee, total_amount, platform_fee, payout_amount, notes) VALUES
+  (v_prop5_id, v_guest6_id, 'airbnb', CURRENT_DATE - INTERVAL '78 days', CURRENT_DATE - INTERVAL '72 days', 'checked_out', 350.00, 175.00, 2275.00, 227.50, 2047.50, 'Winter lake getaway'),
+  (v_prop5_id, v_guest11_id, 'vrbo', CURRENT_DATE - INTERVAL '62 days', CURRENT_DATE - INTERVAL '52 days', 'checked_out', 325.00, 175.00, 3425.00, 308.25, 3116.75, 'Remote work - 10 night stay'),
+  (v_prop5_id, v_guest5_id, 'direct', CURRENT_DATE - INTERVAL '48 days', CURRENT_DATE - INTERVAL '44 days', 'checked_out', 375.00, 175.00, 1675.00, 0.00, 1675.00, 'Romantic escape'),
+  (v_prop5_id, v_guest13_id, 'airbnb', CURRENT_DATE - INTERVAL '38 days', CURRENT_DATE - INTERVAL '33 days', 'checked_out', 350.00, 175.00, 1925.00, 192.50, 1732.50, 'Birdwatching on the lake'),
+  (v_prop5_id, v_guest1_id, 'vrbo', CURRENT_DATE - INTERVAL '27 days', CURRENT_DATE - INTERVAL '22 days', 'checked_out', 375.00, 175.00, 2050.00, 184.50, 1865.50, 'Ice fishing attempt'),
+  (v_prop5_id, v_guest14_id, 'airbnb', CURRENT_DATE - INTERVAL '18 days', CURRENT_DATE - INTERVAL '15 days', 'checked_out', 375.00, 175.00, 1300.00, 130.00, 1170.00, 'Weekend getaway'),
+  (v_prop5_id, v_guest9_id, 'direct', CURRENT_DATE - INTERVAL '10 days', CURRENT_DATE - INTERVAL '7 days', 'checked_out', 350.00, 175.00, 1225.00, 0.00, 1225.00, 'Local family visit'),
+  (v_prop5_id, v_guest12_id, 'vrbo', CURRENT_DATE - INTERVAL '5 days', CURRENT_DATE - INTERVAL '2 days', 'checked_out', 375.00, 175.00, 1300.00, 117.00, 1183.00, 'Writing inspiration');
+
+  -- LAKEFRONT HIDEAWAY - Upcoming
+  INSERT INTO bookings (property_id, guest_id, source, check_in, check_out, status, nightly_rate, cleaning_fee, total_amount, platform_fee, payout_amount, notes) VALUES
+  (v_prop5_id, v_guest11_id, 'direct', CURRENT_DATE + INTERVAL '1 day', CURRENT_DATE + INTERVAL '8 days', 'confirmed', 325.00, 175.00, 2450.00, 0.00, 2450.00, 'Remote work week'),
+  (v_prop5_id, v_guest5_id, 'airbnb', CURRENT_DATE + INTERVAL '15 days', CURRENT_DATE + INTERVAL '19 days', 'confirmed', 375.00, 175.00, 1675.00, 167.50, 1507.50, 'Valentine''s getaway'),
+  (v_prop5_id, v_guest6_id, 'vrbo', CURRENT_DATE + INTERVAL '30 days', CURRENT_DATE + INTERVAL '37 days', 'confirmed', 375.00, 175.00, 2800.00, 252.00, 2548.00, 'Spring break family week');
 
   -- =====================
-  -- MAINTENANCE TASKS
+  -- MAINTENANCE TASKS - Comprehensive list
   -- =====================
-  INSERT INTO maintenance_tasks (property_id, type, title, scheduled_date, completed_date, vendor_id, cost, notes, recurring) VALUES
+
+  -- Past completed maintenance
+  INSERT INTO maintenance_tasks (property_id, type, title, description, scheduled_date, completed_date, vendor_id, cost, notes, status, priority) VALUES
   -- Mountain View Lodge
-  (v_prop1_id, 'cleaning', 'Post-checkout deep clean', CURRENT_DATE - INTERVAL '335 days', CURRENT_DATE - INTERVAL '335 days', v_vendor1_id, 250.00, 'Standard turnover', false),
-  (v_prop1_id, 'pool', 'Hot tub maintenance', CURRENT_DATE - INTERVAL '300 days', CURRENT_DATE - INTERVAL '300 days', v_vendor3_id, 150.00, 'Filter replacement', false),
-  (v_prop1_id, 'repair', 'Deck board replacement', CURRENT_DATE - INTERVAL '200 days', CURRENT_DATE - INTERVAL '198 days', NULL, 450.00, 'Replaced 6 worn boards', false),
-  (v_prop1_id, 'landscaping', 'Snow removal', CURRENT_DATE - INTERVAL '100 days', CURRENT_DATE - INTERVAL '100 days', v_vendor2_id, 200.00, 'Heavy snowfall', false),
-  (v_prop1_id, 'cleaning', 'Spring deep clean', CURRENT_DATE - INTERVAL '45 days', CURRENT_DATE - INTERVAL '45 days', v_vendor1_id, 350.00, 'Seasonal deep clean', false),
+  (v_prop1_id, 'cleaning', 'Post-checkout turnover', 'Standard turnover clean after ski group', CURRENT_DATE - INTERVAL '78 days', CURRENT_DATE - INTERVAL '78 days', NULL, 0.00, 'Ten Point staff - 4 hours', 'completed', 'normal'),
+  (v_prop1_id, 'pool', 'Hot tub filter replacement', 'Quarterly filter change', CURRENT_DATE - INTERVAL '75 days', CURRENT_DATE - INTERVAL '75 days', v_vendor2_id, 185.00, 'Filter + labor', 'completed', 'normal'),
+  (v_prop1_id, 'cleaning', 'Post-checkout turnover', 'Deep clean after family reunion', CURRENT_DATE - INTERVAL '64 days', CURRENT_DATE - INTERVAL '64 days', NULL, 0.00, 'Ten Point staff - 6 hours (extra dirty)', 'completed', 'normal'),
+  (v_prop1_id, 'repair', 'Dishwasher repair', 'Not draining properly', CURRENT_DATE - INTERVAL '60 days', CURRENT_DATE - INTERVAL '59 days', v_vendor3_id, 275.00, 'Pump replacement', 'completed', 'high'),
+  (v_prop1_id, 'cleaning', 'Post-checkout turnover', 'Standard clean', CURRENT_DATE - INTERVAL '54 days', CURRENT_DATE - INTERVAL '54 days', NULL, 0.00, 'Ten Point staff - 4 hours', 'completed', 'normal'),
+  (v_prop1_id, 'landscaping', 'Snow removal - heavy storm', 'Clear driveway and walkways', CURRENT_DATE - INTERVAL '50 days', CURRENT_DATE - INTERVAL '50 days', v_vendor1_id, 350.00, '2 feet of snow', 'completed', 'urgent'),
+  (v_prop1_id, 'cleaning', 'Post-checkout turnover', 'Standard clean', CURRENT_DATE - INTERVAL '45 days', CURRENT_DATE - INTERVAL '45 days', NULL, 0.00, 'Ten Point staff - 4 hours', 'completed', 'normal'),
+  (v_prop1_id, 'cleaning', 'Post-checkout turnover', 'Standard clean', CURRENT_DATE - INTERVAL '33 days', CURRENT_DATE - INTERVAL '33 days', NULL, 0.00, 'Ten Point staff - 4 hours', 'completed', 'normal'),
+  (v_prop1_id, 'repair', 'Garage door adjustment', 'Not closing properly', CURRENT_DATE - INTERVAL '30 days', CURRENT_DATE - INTERVAL '30 days', v_vendor3_id, 125.00, 'Sensor realignment', 'completed', 'normal'),
+  (v_prop1_id, 'cleaning', 'Post-checkout turnover', 'Standard clean', CURRENT_DATE - INTERVAL '25 days', CURRENT_DATE - INTERVAL '25 days', NULL, 0.00, 'Ten Point staff - 4 hours', 'completed', 'normal'),
+  (v_prop1_id, 'cleaning', 'Post-checkout turnover', 'Deep clean family with kids', CURRENT_DATE - INTERVAL '14 days', CURRENT_DATE - INTERVAL '14 days', NULL, 0.00, 'Ten Point staff - 5 hours', 'completed', 'normal'),
+  (v_prop1_id, 'pool', 'Hot tub service', 'Water chemistry check', CURRENT_DATE - INTERVAL '10 days', CURRENT_DATE - INTERVAL '10 days', v_vendor2_id, 95.00, 'Balanced chemicals', 'completed', 'normal'),
+  (v_prop1_id, 'cleaning', 'Post-checkout turnover', 'Standard clean', CURRENT_DATE - INTERVAL '3 days', CURRENT_DATE - INTERVAL '3 days', NULL, 0.00, 'Ten Point staff - 4 hours', 'completed', 'normal'),
 
   -- Riverside Cabin
-  (v_prop2_id, 'cleaning', 'Standard turnover', CURRENT_DATE - INTERVAL '315 days', CURRENT_DATE - INTERVAL '315 days', v_vendor1_id, 150.00, NULL, false),
-  (v_prop2_id, 'repair', 'Dock repair', CURRENT_DATE - INTERVAL '250 days', CURRENT_DATE - INTERVAL '248 days', NULL, 800.00, 'Storm damage repair', false),
-  (v_prop2_id, 'landscaping', 'Trail clearing', CURRENT_DATE - INTERVAL '180 days', CURRENT_DATE - INTERVAL '180 days', v_vendor2_id, 300.00, 'Cleared fallen trees', false),
+  (v_prop2_id, 'cleaning', 'Post-checkout turnover', 'Standard clean', CURRENT_DATE - INTERVAL '77 days', CURRENT_DATE - INTERVAL '77 days', NULL, 0.00, 'Ten Point staff - 2.5 hours', 'completed', 'normal'),
+  (v_prop2_id, 'cleaning', 'Post-checkout turnover', 'Standard clean', CURRENT_DATE - INTERVAL '64 days', CURRENT_DATE - INTERVAL '64 days', NULL, 0.00, 'Ten Point staff - 2.5 hours', 'completed', 'normal'),
+  (v_prop2_id, 'repair', 'Kayak repairs', 'Patch small holes', CURRENT_DATE - INTERVAL '55 days', CURRENT_DATE - INTERVAL '54 days', NULL, 45.00, 'DIY repair kit', 'completed', 'low'),
+  (v_prop2_id, 'cleaning', 'Post-checkout turnover', 'Extra clean - long stay', CURRENT_DATE - INTERVAL '48 days', CURRENT_DATE - INTERVAL '48 days', NULL, 0.00, 'Ten Point staff - 3 hours', 'completed', 'normal'),
+  (v_prop2_id, 'cleaning', 'Post-checkout turnover', 'Standard clean', CURRENT_DATE - INTERVAL '39 days', CURRENT_DATE - INTERVAL '39 days', NULL, 0.00, 'Ten Point staff - 2.5 hours', 'completed', 'normal'),
+  (v_prop2_id, 'landscaping', 'Trail clearing', 'Fallen branch on path to river', CURRENT_DATE - INTERVAL '35 days', CURRENT_DATE - INTERVAL '35 days', v_vendor1_id, 150.00, 'Chainsaw work', 'completed', 'normal'),
+  (v_prop2_id, 'cleaning', 'Post-checkout turnover', 'Standard clean', CURRENT_DATE - INTERVAL '31 days', CURRENT_DATE - INTERVAL '31 days', NULL, 0.00, 'Ten Point staff - 2.5 hours', 'completed', 'normal'),
+  (v_prop2_id, 'cleaning', 'Post-checkout turnover', 'Standard clean', CURRENT_DATE - INTERVAL '19 days', CURRENT_DATE - INTERVAL '19 days', NULL, 0.00, 'Ten Point staff - 2.5 hours', 'completed', 'normal'),
+  (v_prop2_id, 'cleaning', 'Post-checkout turnover', 'Standard clean', CURRENT_DATE - INTERVAL '10 days', CURRENT_DATE - INTERVAL '10 days', NULL, 0.00, 'Ten Point staff - 2.5 hours', 'completed', 'normal'),
+  (v_prop2_id, 'cleaning', 'Post-checkout turnover', 'Standard clean', CURRENT_DATE - INTERVAL '4 days', CURRENT_DATE - INTERVAL '4 days', NULL, 0.00, 'Ten Point staff - 2.5 hours', 'completed', 'normal'),
 
   -- Big Sky Retreat
-  (v_prop3_id, 'cleaning', 'Post-ski season deep clean', CURRENT_DATE - INTERVAL '323 days', CURRENT_DATE - INTERVAL '323 days', v_vendor1_id, 400.00, 'Full house cleaning', false),
-  (v_prop3_id, 'pool', 'Hot tub winterization', CURRENT_DATE - INTERVAL '270 days', CURRENT_DATE - INTERVAL '270 days', v_vendor3_id, 200.00, NULL, false),
-  (v_prop3_id, 'repair', 'Boot warmer replacement', CURRENT_DATE - INTERVAL '150 days', CURRENT_DATE - INTERVAL '149 days', NULL, 350.00, 'Replaced 4 warmers', false),
-  (v_prop3_id, 'landscaping', 'Snow removal - heavy', CURRENT_DATE - INTERVAL '95 days', CURRENT_DATE - INTERVAL '95 days', v_vendor2_id, 400.00, '3 feet of snow', false),
+  (v_prop3_id, 'cleaning', 'Post-checkout turnover', 'Full house deep clean', CURRENT_DATE - INTERVAL '81 days', CURRENT_DATE - INTERVAL '81 days', NULL, 0.00, 'Ten Point staff - 8 hours (2 people)', 'completed', 'normal'),
+  (v_prop3_id, 'pool', 'Hot tub deep clean', 'Post heavy use', CURRENT_DATE - INTERVAL '78 days', CURRENT_DATE - INTERVAL '78 days', v_vendor2_id, 225.00, 'Drain, clean, refill', 'completed', 'normal'),
+  (v_prop3_id, 'cleaning', 'Post-checkout turnover', 'Corporate group clean', CURRENT_DATE - INTERVAL '70 days', CURRENT_DATE - INTERVAL '70 days', NULL, 0.00, 'Ten Point staff - 6 hours', 'completed', 'normal'),
+  (v_prop3_id, 'repair', 'Boot warmer replacement', '2 units failed', CURRENT_DATE - INTERVAL '65 days', CURRENT_DATE - INTERVAL '64 days', NULL, 380.00, 'Parts ordered online', 'completed', 'high'),
+  (v_prop3_id, 'cleaning', 'Post-checkout turnover', 'Standard clean', CURRENT_DATE - INTERVAL '55 days', CURRENT_DATE - INTERVAL '55 days', NULL, 0.00, 'Ten Point staff - 6 hours', 'completed', 'normal'),
+  (v_prop3_id, 'landscaping', 'Snow removal', 'Heavy accumulation', CURRENT_DATE - INTERVAL '48 days', CURRENT_DATE - INTERVAL '48 days', v_vendor1_id, 450.00, 'Roof rake + driveway', 'completed', 'urgent'),
+  (v_prop3_id, 'cleaning', 'Post-checkout turnover', 'Deep clean large group', CURRENT_DATE - INTERVAL '38 days', CURRENT_DATE - INTERVAL '38 days', NULL, 0.00, 'Ten Point staff - 8 hours', 'completed', 'normal'),
+  (v_prop3_id, 'cleaning', 'Post-checkout turnover', 'Standard clean', CURRENT_DATE - INTERVAL '26 days', CURRENT_DATE - INTERVAL '26 days', NULL, 0.00, 'Ten Point staff - 6 hours', 'completed', 'normal'),
+  (v_prop3_id, 'pool', 'Hot tub chemical balance', 'Weekly check', CURRENT_DATE - INTERVAL '20 days', CURRENT_DATE - INTERVAL '20 days', v_vendor2_id, 75.00, 'Routine service', 'completed', 'normal'),
+  (v_prop3_id, 'cleaning', 'Post-checkout turnover', 'Quick turnaround clean', CURRENT_DATE - INTERVAL '14 days', CURRENT_DATE - INTERVAL '14 days', NULL, 0.00, 'Ten Point staff - 6 hours', 'completed', 'normal'),
+  (v_prop3_id, 'cleaning', 'Post-checkout turnover', 'Standard clean', CURRENT_DATE - INTERVAL '5 days', CURRENT_DATE - INTERVAL '5 days', NULL, 0.00, 'Ten Point staff - 6 hours', 'completed', 'normal'),
 
   -- Paradise Valley Ranch
-  (v_prop4_id, 'landscaping', 'Pasture maintenance', CURRENT_DATE - INTERVAL '280 days', CURRENT_DATE - INTERVAL '280 days', v_vendor2_id, 500.00, 'Fence repair and mowing', false),
-  (v_prop4_id, 'repair', 'Barn door fix', CURRENT_DATE - INTERVAL '200 days', CURRENT_DATE - INTERVAL '199 days', NULL, 275.00, 'Hinge replacement', false),
-  (v_prop4_id, 'other', 'Well inspection', CURRENT_DATE - INTERVAL '120 days', CURRENT_DATE - INTERVAL '120 days', NULL, 350.00, 'Annual inspection - passed', false),
+  (v_prop4_id, 'cleaning', 'Post-checkout turnover', 'Family clean', CURRENT_DATE - INTERVAL '74 days', CURRENT_DATE - INTERVAL '74 days', NULL, 0.00, 'Ten Point staff - 4 hours', 'completed', 'normal'),
+  (v_prop4_id, 'cleaning', 'Post-checkout turnover', 'Standard clean', CURRENT_DATE - INTERVAL '61 days', CURRENT_DATE - INTERVAL '61 days', NULL, 0.00, 'Ten Point staff - 4 hours', 'completed', 'normal'),
+  (v_prop4_id, 'landscaping', 'Fence repair', 'Section down from wind', CURRENT_DATE - INTERVAL '58 days', CURRENT_DATE - INTERVAL '57 days', v_vendor1_id, 425.00, 'Replace 20ft section', 'completed', 'high'),
+  (v_prop4_id, 'cleaning', 'Post-checkout turnover', 'Yoga group clean', CURRENT_DATE - INTERVAL '46 days', CURRENT_DATE - INTERVAL '46 days', NULL, 0.00, 'Ten Point staff - 4 hours', 'completed', 'normal'),
+  (v_prop4_id, 'other', 'Horse area cleanup', 'Pre-guest prep', CURRENT_DATE - INTERVAL '42 days', CURRENT_DATE - INTERVAL '42 days', NULL, 0.00, 'Ten Point staff - 2 hours', 'completed', 'normal'),
+  (v_prop4_id, 'cleaning', 'Post-checkout turnover', 'Multi-gen family clean', CURRENT_DATE - INTERVAL '35 days', CURRENT_DATE - INTERVAL '35 days', NULL, 0.00, 'Ten Point staff - 4 hours', 'completed', 'normal'),
+  (v_prop4_id, 'cleaning', 'Post-checkout turnover', 'Standard clean', CURRENT_DATE - INTERVAL '26 days', CURRENT_DATE - INTERVAL '26 days', NULL, 0.00, 'Ten Point staff - 3.5 hours', 'completed', 'normal'),
+  (v_prop4_id, 'cleaning', 'Post-checkout turnover', 'Standard clean', CURRENT_DATE - INTERVAL '17 days', CURRENT_DATE - INTERVAL '17 days', NULL, 0.00, 'Ten Point staff - 3.5 hours', 'completed', 'normal'),
+  (v_prop4_id, 'other', 'Pest inspection', 'Quarterly prevention', CURRENT_DATE - INTERVAL '15 days', CURRENT_DATE - INTERVAL '15 days', v_vendor4_id, 125.00, 'All clear', 'completed', 'normal'),
+  (v_prop4_id, 'cleaning', 'Post-checkout turnover', 'Return family clean', CURRENT_DATE - INTERVAL '7 days', CURRENT_DATE - INTERVAL '7 days', NULL, 0.00, 'Ten Point staff - 4 hours', 'completed', 'normal'),
+  (v_prop4_id, 'cleaning', 'Post-checkout turnover', 'Quick photo trip clean', CURRENT_DATE - INTERVAL '1 day', CURRENT_DATE - INTERVAL '1 day', NULL, 0.00, 'Ten Point staff - 3 hours', 'completed', 'normal'),
 
   -- Lakefront Hideaway
-  (v_prop5_id, 'repair', 'Dock maintenance', CURRENT_DATE - INTERVAL '300 days', CURRENT_DATE - INTERVAL '298 days', NULL, 600.00, 'Pre-season prep', false),
-  (v_prop5_id, 'cleaning', 'Standard turnover', CURRENT_DATE - INTERVAL '285 days', CURRENT_DATE - INTERVAL '285 days', v_vendor1_id, 175.00, NULL, false),
-  (v_prop5_id, 'other', 'Kayak/paddleboard maintenance', CURRENT_DATE - INTERVAL '200 days', CURRENT_DATE - INTERVAL '200 days', NULL, 150.00, 'Patched kayak, new paddles', false),
+  (v_prop5_id, 'cleaning', 'Post-checkout turnover', 'Winter clean', CURRENT_DATE - INTERVAL '72 days', CURRENT_DATE - INTERVAL '72 days', NULL, 0.00, 'Ten Point staff - 3.5 hours', 'completed', 'normal'),
+  (v_prop5_id, 'repair', 'Dock inspection', 'Pre-season check', CURRENT_DATE - INTERVAL '68 days', CURRENT_DATE - INTERVAL '68 days', NULL, 0.00, 'Minor repairs needed', 'completed', 'normal'),
+  (v_prop5_id, 'cleaning', 'Post-checkout turnover', 'Long stay deep clean', CURRENT_DATE - INTERVAL '52 days', CURRENT_DATE - INTERVAL '52 days', NULL, 0.00, 'Ten Point staff - 4 hours', 'completed', 'normal'),
+  (v_prop5_id, 'cleaning', 'Post-checkout turnover', 'Standard clean', CURRENT_DATE - INTERVAL '44 days', CURRENT_DATE - INTERVAL '44 days', NULL, 0.00, 'Ten Point staff - 3.5 hours', 'completed', 'normal'),
+  (v_prop5_id, 'repair', 'Dock board replacement', 'Rotted boards', CURRENT_DATE - INTERVAL '40 days', CURRENT_DATE - INTERVAL '39 days', v_vendor3_id, 350.00, 'Replaced 4 boards', 'completed', 'normal'),
+  (v_prop5_id, 'cleaning', 'Post-checkout turnover', 'Birdwatcher clean', CURRENT_DATE - INTERVAL '33 days', CURRENT_DATE - INTERVAL '33 days', NULL, 0.00, 'Ten Point staff - 3.5 hours', 'completed', 'normal'),
+  (v_prop5_id, 'cleaning', 'Post-checkout turnover', 'Standard clean', CURRENT_DATE - INTERVAL '22 days', CURRENT_DATE - INTERVAL '22 days', NULL, 0.00, 'Ten Point staff - 3.5 hours', 'completed', 'normal'),
+  (v_prop5_id, 'other', 'Pest inspection', 'Quarterly prevention', CURRENT_DATE - INTERVAL '18 days', CURRENT_DATE - INTERVAL '18 days', v_vendor4_id, 125.00, 'All clear', 'completed', 'normal'),
+  (v_prop5_id, 'cleaning', 'Post-checkout turnover', 'Weekend clean', CURRENT_DATE - INTERVAL '15 days', CURRENT_DATE - INTERVAL '15 days', NULL, 0.00, 'Ten Point staff - 3 hours', 'completed', 'normal'),
+  (v_prop5_id, 'cleaning', 'Post-checkout turnover', 'Standard clean', CURRENT_DATE - INTERVAL '7 days', CURRENT_DATE - INTERVAL '7 days', NULL, 0.00, 'Ten Point staff - 3.5 hours', 'completed', 'normal'),
+  (v_prop5_id, 'cleaning', 'Post-checkout turnover', 'Writer retreat clean', CURRENT_DATE - INTERVAL '2 days', CURRENT_DATE - INTERVAL '2 days', NULL, 0.00, 'Ten Point staff - 3 hours', 'completed', 'normal');
 
-  -- Upcoming maintenance
-  (v_prop1_id, 'pool', 'Hot tub service', CURRENT_DATE + INTERVAL '10 days', NULL, v_vendor3_id, NULL, 'Quarterly maintenance', false),
-  (v_prop3_id, 'cleaning', 'Pre-ski season prep', CURRENT_DATE + INTERVAL '20 days', NULL, v_vendor1_id, NULL, 'Deep clean before peak season', false);
+  -- Upcoming/pending maintenance
+  INSERT INTO maintenance_tasks (property_id, type, title, description, scheduled_date, vendor_id, notes, status, priority) VALUES
+  (v_prop1_id, 'cleaning', 'Pre-arrival prep', 'Prepare for ski group arrival', CURRENT_DATE + INTERVAL '4 days', NULL, 'Ten Point staff scheduled', 'pending', 'normal'),
+  (v_prop1_id, 'pool', 'Hot tub quarterly service', 'Filter and water change', CURRENT_DATE + INTERVAL '10 days', v_vendor2_id, 'Scheduled with vendor', 'pending', 'normal'),
+  (v_prop2_id, 'cleaning', 'Pre-arrival prep', 'Anniversary couple arriving', CURRENT_DATE + INTERVAL '2 days', NULL, 'Extra attention to details', 'pending', 'normal'),
+  (v_prop3_id, 'cleaning', 'Pre-arrival deep clean', 'Peak season prep', CURRENT_DATE + INTERVAL '7 days', NULL, 'Full team - 3 people', 'pending', 'high'),
+  (v_prop3_id, 'landscaping', 'Snow removal', 'Pre-guest clearing', CURRENT_DATE + INTERVAL '7 days', v_vendor1_id, 'Weather dependent', 'pending', 'normal'),
+  (v_prop4_id, 'cleaning', 'Pre-arrival prep', 'Wellness retreat arriving', CURRENT_DATE + INTERVAL '1 day', NULL, 'Ten Point staff', 'pending', 'high'),
+  (v_prop4_id, 'other', 'Horse prep', 'Groom and prepare for guests', CURRENT_DATE + INTERVAL '1 day', NULL, 'Ranch hand scheduled', 'pending', 'normal'),
+  (v_prop5_id, 'cleaning', 'Pre-arrival prep', 'Remote worker arriving', CURRENT_DATE, NULL, 'Extra WiFi check', 'in_progress', 'high'),
+  (v_prop5_id, 'repair', 'Paddleboard inspection', 'Pre-season check', CURRENT_DATE + INTERVAL '20 days', NULL, 'Check all equipment', 'pending', 'low'),
+  (v_prop1_id, 'other', 'Pest prevention', 'Quarterly service all properties', CURRENT_DATE + INTERVAL '15 days', v_vendor4_id, 'Schedule all 5 properties same day', 'pending', 'normal');
 
   -- =====================
-  -- EXPENSES
+  -- EXPENSES - Comprehensive including Ten Point cleaning labor
   -- =====================
   INSERT INTO expenses (property_id, category, amount, description, date, vendor_id) VALUES
-  -- Utilities
-  (v_prop1_id, 'utilities', 450.00, 'Electric - January', CURRENT_DATE - INTERVAL '330 days', NULL),
-  (v_prop1_id, 'utilities', 380.00, 'Electric - February', CURRENT_DATE - INTERVAL '300 days', NULL),
-  (v_prop1_id, 'utilities', 320.00, 'Electric - March', CURRENT_DATE - INTERVAL '270 days', NULL),
-  (v_prop1_id, 'utilities', 280.00, 'Electric - April', CURRENT_DATE - INTERVAL '240 days', NULL),
-  (v_prop1_id, 'utilities', 220.00, 'Electric - May', CURRENT_DATE - INTERVAL '210 days', NULL),
-  (v_prop1_id, 'utilities', 180.00, 'Electric - June', CURRENT_DATE - INTERVAL '180 days', NULL),
-  (v_prop1_id, 'utilities', 150.00, 'Electric - July', CURRENT_DATE - INTERVAL '150 days', NULL),
-  (v_prop1_id, 'utilities', 160.00, 'Electric - August', CURRENT_DATE - INTERVAL '120 days', NULL),
-  (v_prop1_id, 'utilities', 200.00, 'Electric - September', CURRENT_DATE - INTERVAL '90 days', NULL),
-  (v_prop1_id, 'utilities', 280.00, 'Electric - October', CURRENT_DATE - INTERVAL '60 days', NULL),
-  (v_prop1_id, 'utilities', 380.00, 'Electric - November', CURRENT_DATE - INTERVAL '30 days', NULL),
 
-  -- Supplies
-  (v_prop1_id, 'supplies', 250.00, 'Linens and towels', CURRENT_DATE - INTERVAL '200 days', NULL),
-  (v_prop2_id, 'supplies', 180.00, 'Fishing gear replacement', CURRENT_DATE - INTERVAL '180 days', NULL),
-  (v_prop3_id, 'supplies', 500.00, 'New ski boot warmers', CURRENT_DATE - INTERVAL '150 days', NULL),
-  (v_prop4_id, 'supplies', 300.00, 'Horse feed and supplies', CURRENT_DATE - INTERVAL '120 days', NULL),
-  (v_prop5_id, 'supplies', 400.00, 'New paddleboards', CURRENT_DATE - INTERVAL '200 days', NULL),
+  -- TEN POINT CLEANING LABOR (internal cost tracked as expense)
+  -- Mountain View Lodge cleaning
+  (v_prop1_id, 'maintenance', 120.00, 'Ten Point cleaning - turnover (4 hrs @ $30)', CURRENT_DATE - INTERVAL '78 days', NULL),
+  (v_prop1_id, 'maintenance', 180.00, 'Ten Point cleaning - deep clean (6 hrs @ $30)', CURRENT_DATE - INTERVAL '64 days', NULL),
+  (v_prop1_id, 'maintenance', 120.00, 'Ten Point cleaning - turnover (4 hrs @ $30)', CURRENT_DATE - INTERVAL '54 days', NULL),
+  (v_prop1_id, 'maintenance', 120.00, 'Ten Point cleaning - turnover (4 hrs @ $30)', CURRENT_DATE - INTERVAL '45 days', NULL),
+  (v_prop1_id, 'maintenance', 120.00, 'Ten Point cleaning - turnover (4 hrs @ $30)', CURRENT_DATE - INTERVAL '33 days', NULL),
+  (v_prop1_id, 'maintenance', 120.00, 'Ten Point cleaning - turnover (4 hrs @ $30)', CURRENT_DATE - INTERVAL '25 days', NULL),
+  (v_prop1_id, 'maintenance', 150.00, 'Ten Point cleaning - family deep clean (5 hrs @ $30)', CURRENT_DATE - INTERVAL '14 days', NULL),
+  (v_prop1_id, 'maintenance', 120.00, 'Ten Point cleaning - turnover (4 hrs @ $30)', CURRENT_DATE - INTERVAL '3 days', NULL),
 
-  -- Insurance
-  (v_prop1_id, 'other', 2400.00, 'Annual property insurance', CURRENT_DATE - INTERVAL '365 days', NULL),
-  (v_prop2_id, 'other', 1800.00, 'Annual property insurance', CURRENT_DATE - INTERVAL '365 days', NULL),
-  (v_prop3_id, 'other', 3600.00, 'Annual property insurance', CURRENT_DATE - INTERVAL '365 days', NULL),
-  (v_prop4_id, 'other', 2200.00, 'Annual property insurance', CURRENT_DATE - INTERVAL '365 days', NULL),
-  (v_prop5_id, 'other', 2000.00, 'Annual property insurance', CURRENT_DATE - INTERVAL '365 days', NULL),
+  -- Riverside Cabin cleaning
+  (v_prop2_id, 'maintenance', 75.00, 'Ten Point cleaning - turnover (2.5 hrs @ $30)', CURRENT_DATE - INTERVAL '77 days', NULL),
+  (v_prop2_id, 'maintenance', 75.00, 'Ten Point cleaning - turnover (2.5 hrs @ $30)', CURRENT_DATE - INTERVAL '64 days', NULL),
+  (v_prop2_id, 'maintenance', 90.00, 'Ten Point cleaning - long stay (3 hrs @ $30)', CURRENT_DATE - INTERVAL '48 days', NULL),
+  (v_prop2_id, 'maintenance', 75.00, 'Ten Point cleaning - turnover (2.5 hrs @ $30)', CURRENT_DATE - INTERVAL '39 days', NULL),
+  (v_prop2_id, 'maintenance', 75.00, 'Ten Point cleaning - turnover (2.5 hrs @ $30)', CURRENT_DATE - INTERVAL '31 days', NULL),
+  (v_prop2_id, 'maintenance', 75.00, 'Ten Point cleaning - turnover (2.5 hrs @ $30)', CURRENT_DATE - INTERVAL '19 days', NULL),
+  (v_prop2_id, 'maintenance', 75.00, 'Ten Point cleaning - turnover (2.5 hrs @ $30)', CURRENT_DATE - INTERVAL '10 days', NULL),
+  (v_prop2_id, 'maintenance', 75.00, 'Ten Point cleaning - turnover (2.5 hrs @ $30)', CURRENT_DATE - INTERVAL '4 days', NULL),
 
-  -- Property taxes (quarterly)
-  (v_prop1_id, 'other', 1500.00, 'Property tax Q1', CURRENT_DATE - INTERVAL '300 days', NULL),
-  (v_prop1_id, 'other', 1500.00, 'Property tax Q2', CURRENT_DATE - INTERVAL '210 days', NULL),
-  (v_prop1_id, 'other', 1500.00, 'Property tax Q3', CURRENT_DATE - INTERVAL '120 days', NULL),
-  (v_prop1_id, 'other', 1500.00, 'Property tax Q4', CURRENT_DATE - INTERVAL '30 days', NULL);
+  -- Big Sky Retreat cleaning
+  (v_prop3_id, 'maintenance', 240.00, 'Ten Point cleaning - full house (8 hrs @ $30)', CURRENT_DATE - INTERVAL '81 days', NULL),
+  (v_prop3_id, 'maintenance', 180.00, 'Ten Point cleaning - corporate (6 hrs @ $30)', CURRENT_DATE - INTERVAL '70 days', NULL),
+  (v_prop3_id, 'maintenance', 180.00, 'Ten Point cleaning - standard (6 hrs @ $30)', CURRENT_DATE - INTERVAL '55 days', NULL),
+  (v_prop3_id, 'maintenance', 240.00, 'Ten Point cleaning - large group (8 hrs @ $30)', CURRENT_DATE - INTERVAL '38 days', NULL),
+  (v_prop3_id, 'maintenance', 180.00, 'Ten Point cleaning - standard (6 hrs @ $30)', CURRENT_DATE - INTERVAL '26 days', NULL),
+  (v_prop3_id, 'maintenance', 180.00, 'Ten Point cleaning - quick turn (6 hrs @ $30)', CURRENT_DATE - INTERVAL '14 days', NULL),
+  (v_prop3_id, 'maintenance', 180.00, 'Ten Point cleaning - standard (6 hrs @ $30)', CURRENT_DATE - INTERVAL '5 days', NULL),
+
+  -- Paradise Valley Ranch cleaning
+  (v_prop4_id, 'maintenance', 120.00, 'Ten Point cleaning - family (4 hrs @ $30)', CURRENT_DATE - INTERVAL '74 days', NULL),
+  (v_prop4_id, 'maintenance', 120.00, 'Ten Point cleaning - standard (4 hrs @ $30)', CURRENT_DATE - INTERVAL '61 days', NULL),
+  (v_prop4_id, 'maintenance', 120.00, 'Ten Point cleaning - yoga group (4 hrs @ $30)', CURRENT_DATE - INTERVAL '46 days', NULL),
+  (v_prop4_id, 'maintenance', 60.00, 'Ten Point horse area prep (2 hrs @ $30)', CURRENT_DATE - INTERVAL '42 days', NULL),
+  (v_prop4_id, 'maintenance', 120.00, 'Ten Point cleaning - multi-gen (4 hrs @ $30)', CURRENT_DATE - INTERVAL '35 days', NULL),
+  (v_prop4_id, 'maintenance', 105.00, 'Ten Point cleaning - standard (3.5 hrs @ $30)', CURRENT_DATE - INTERVAL '26 days', NULL),
+  (v_prop4_id, 'maintenance', 105.00, 'Ten Point cleaning - standard (3.5 hrs @ $30)', CURRENT_DATE - INTERVAL '17 days', NULL),
+  (v_prop4_id, 'maintenance', 120.00, 'Ten Point cleaning - return family (4 hrs @ $30)', CURRENT_DATE - INTERVAL '7 days', NULL),
+  (v_prop4_id, 'maintenance', 90.00, 'Ten Point cleaning - quick stay (3 hrs @ $30)', CURRENT_DATE - INTERVAL '1 day', NULL),
+
+  -- Lakefront Hideaway cleaning
+  (v_prop5_id, 'maintenance', 105.00, 'Ten Point cleaning - winter (3.5 hrs @ $30)', CURRENT_DATE - INTERVAL '72 days', NULL),
+  (v_prop5_id, 'maintenance', 120.00, 'Ten Point cleaning - long stay (4 hrs @ $30)', CURRENT_DATE - INTERVAL '52 days', NULL),
+  (v_prop5_id, 'maintenance', 105.00, 'Ten Point cleaning - standard (3.5 hrs @ $30)', CURRENT_DATE - INTERVAL '44 days', NULL),
+  (v_prop5_id, 'maintenance', 105.00, 'Ten Point cleaning - standard (3.5 hrs @ $30)', CURRENT_DATE - INTERVAL '33 days', NULL),
+  (v_prop5_id, 'maintenance', 105.00, 'Ten Point cleaning - standard (3.5 hrs @ $30)', CURRENT_DATE - INTERVAL '22 days', NULL),
+  (v_prop5_id, 'maintenance', 90.00, 'Ten Point cleaning - weekend (3 hrs @ $30)', CURRENT_DATE - INTERVAL '15 days', NULL),
+  (v_prop5_id, 'maintenance', 105.00, 'Ten Point cleaning - standard (3.5 hrs @ $30)', CURRENT_DATE - INTERVAL '7 days', NULL),
+  (v_prop5_id, 'maintenance', 90.00, 'Ten Point cleaning - writer (3 hrs @ $30)', CURRENT_DATE - INTERVAL '2 days', NULL),
+
+  -- UTILITIES (monthly)
+  (v_prop1_id, 'utilities', 385.00, 'Electric - December', CURRENT_DATE - INTERVAL '75 days', NULL),
+  (v_prop1_id, 'utilities', 420.00, 'Electric - January', CURRENT_DATE - INTERVAL '45 days', NULL),
+  (v_prop1_id, 'utilities', 380.00, 'Electric - February', CURRENT_DATE - INTERVAL '15 days', NULL),
+  (v_prop1_id, 'utilities', 95.00, 'Internet - December', CURRENT_DATE - INTERVAL '75 days', NULL),
+  (v_prop1_id, 'utilities', 95.00, 'Internet - January', CURRENT_DATE - INTERVAL '45 days', NULL),
+  (v_prop1_id, 'utilities', 95.00, 'Internet - February', CURRENT_DATE - INTERVAL '15 days', NULL),
+  (v_prop1_id, 'utilities', 180.00, 'Propane refill', CURRENT_DATE - INTERVAL '60 days', NULL),
+
+  (v_prop2_id, 'utilities', 145.00, 'Electric - December', CURRENT_DATE - INTERVAL '75 days', NULL),
+  (v_prop2_id, 'utilities', 165.00, 'Electric - January', CURRENT_DATE - INTERVAL '45 days', NULL),
+  (v_prop2_id, 'utilities', 155.00, 'Electric - February', CURRENT_DATE - INTERVAL '15 days', NULL),
+  (v_prop2_id, 'utilities', 75.00, 'Internet - December', CURRENT_DATE - INTERVAL '75 days', NULL),
+  (v_prop2_id, 'utilities', 75.00, 'Internet - January', CURRENT_DATE - INTERVAL '45 days', NULL),
+  (v_prop2_id, 'utilities', 75.00, 'Internet - February', CURRENT_DATE - INTERVAL '15 days', NULL),
+
+  (v_prop3_id, 'utilities', 525.00, 'Electric - December', CURRENT_DATE - INTERVAL '75 days', NULL),
+  (v_prop3_id, 'utilities', 580.00, 'Electric - January', CURRENT_DATE - INTERVAL '45 days', NULL),
+  (v_prop3_id, 'utilities', 550.00, 'Electric - February', CURRENT_DATE - INTERVAL '15 days', NULL),
+  (v_prop3_id, 'utilities', 150.00, 'Internet/Cable - December', CURRENT_DATE - INTERVAL '75 days', NULL),
+  (v_prop3_id, 'utilities', 150.00, 'Internet/Cable - January', CURRENT_DATE - INTERVAL '45 days', NULL),
+  (v_prop3_id, 'utilities', 150.00, 'Internet/Cable - February', CURRENT_DATE - INTERVAL '15 days', NULL),
+  (v_prop3_id, 'utilities', 320.00, 'Propane - heating', CURRENT_DATE - INTERVAL '55 days', NULL),
+
+  (v_prop4_id, 'utilities', 195.00, 'Electric - December', CURRENT_DATE - INTERVAL '75 days', NULL),
+  (v_prop4_id, 'utilities', 210.00, 'Electric - January', CURRENT_DATE - INTERVAL '45 days', NULL),
+  (v_prop4_id, 'utilities', 200.00, 'Electric - February', CURRENT_DATE - INTERVAL '15 days', NULL),
+  (v_prop4_id, 'utilities', 85.00, 'Internet - December', CURRENT_DATE - INTERVAL '75 days', NULL),
+  (v_prop4_id, 'utilities', 85.00, 'Internet - January', CURRENT_DATE - INTERVAL '45 days', NULL),
+  (v_prop4_id, 'utilities', 85.00, 'Internet - February', CURRENT_DATE - INTERVAL '15 days', NULL),
+  (v_prop4_id, 'other', 250.00, 'Horse feed and supplies', CURRENT_DATE - INTERVAL '40 days', NULL),
+
+  (v_prop5_id, 'utilities', 175.00, 'Electric - December', CURRENT_DATE - INTERVAL '75 days', NULL),
+  (v_prop5_id, 'utilities', 190.00, 'Electric - January', CURRENT_DATE - INTERVAL '45 days', NULL),
+  (v_prop5_id, 'utilities', 180.00, 'Electric - February', CURRENT_DATE - INTERVAL '15 days', NULL),
+  (v_prop5_id, 'utilities', 85.00, 'Internet - December', CURRENT_DATE - INTERVAL '75 days', NULL),
+  (v_prop5_id, 'utilities', 85.00, 'Internet - January', CURRENT_DATE - INTERVAL '45 days', NULL),
+  (v_prop5_id, 'utilities', 85.00, 'Internet - February', CURRENT_DATE - INTERVAL '15 days', NULL),
+
+  -- SUPPLIES
+  (v_prop1_id, 'supplies', 185.00, 'Linens and towels restock', CURRENT_DATE - INTERVAL '60 days', NULL),
+  (v_prop1_id, 'supplies', 95.00, 'Cleaning supplies', CURRENT_DATE - INTERVAL '45 days', NULL),
+  (v_prop1_id, 'supplies', 125.00, 'Kitchen supplies restock', CURRENT_DATE - INTERVAL '30 days', NULL),
+  (v_prop2_id, 'supplies', 75.00, 'Fishing tackle replacement', CURRENT_DATE - INTERVAL '50 days', NULL),
+  (v_prop2_id, 'supplies', 60.00, 'Cleaning supplies', CURRENT_DATE - INTERVAL '35 days', NULL),
+  (v_prop3_id, 'supplies', 220.00, 'Premium linens', CURRENT_DATE - INTERVAL '70 days', NULL),
+  (v_prop3_id, 'supplies', 145.00, 'Cleaning supplies bulk', CURRENT_DATE - INTERVAL '40 days', NULL),
+  (v_prop3_id, 'supplies', 85.00, 'Coffee and kitchen stock', CURRENT_DATE - INTERVAL '20 days', NULL),
+  (v_prop4_id, 'supplies', 95.00, 'Cleaning supplies', CURRENT_DATE - INTERVAL '55 days', NULL),
+  (v_prop4_id, 'supplies', 65.00, 'Fire pit supplies', CURRENT_DATE - INTERVAL '25 days', NULL),
+  (v_prop5_id, 'supplies', 110.00, 'Water sports equipment', CURRENT_DATE - INTERVAL '65 days', NULL),
+  (v_prop5_id, 'supplies', 70.00, 'Cleaning supplies', CURRENT_DATE - INTERVAL '30 days', NULL);
 
   -- =====================
-  -- INQUIRIES (some recent ones)
+  -- INQUIRIES
   -- =====================
   INSERT INTO inquiries (property_id, name, email, phone, check_in, check_out, guests, message, status, created_at) VALUES
-  (v_prop1_id, 'Tom Bradley', 'tom.bradley@email.com', '(555) 123-4567', CURRENT_DATE + INTERVAL '60 days', CURRENT_DATE + INTERVAL '67 days', 8, 'Hi, we''re interested in booking your lodge for a family reunion. Is it available for the dates listed? We have 8 adults.', 'new', CURRENT_DATE - INTERVAL '2 days'),
-  (v_prop3_id, 'Jennifer Adams', 'jadams@company.com', '(555) 234-5678', CURRENT_DATE + INTERVAL '75 days', CURRENT_DATE + INTERVAL '78 days', 10, 'Looking for a corporate retreat venue. Do you offer any discounts for 3+ night stays? We need space for 10 people with good WiFi.', 'contacted', CURRENT_DATE - INTERVAL '5 days'),
-  (v_prop5_id, 'Mike Chen', 'mchen@email.com', NULL, CURRENT_DATE + INTERVAL '120 days', CURRENT_DATE + INTERVAL '125 days', 4, 'Is the lake good for fishing in spring? We''re a group of 4 looking for a fishing getaway.', 'new', CURRENT_DATE - INTERVAL '1 day'),
-  (v_prop2_id, 'Sandra White', 'swhite@email.com', '(555) 345-6789', CURRENT_DATE + INTERVAL '45 days', CURRENT_DATE + INTERVAL '48 days', 2, 'My husband and I are celebrating our 25th anniversary. Is the cabin romantic? Any special touches you can arrange?', 'converted', CURRENT_DATE - INTERVAL '10 days');
+  (v_prop1_id, 'Tom Bradley', 'tom.bradley@email.com', '(555) 123-4567', CURRENT_DATE + INTERVAL '50 days', CURRENT_DATE + INTERVAL '57 days', 8, 'Hi, we''re interested in booking your lodge for a family gathering. Is it available for the dates listed? We have 8 adults. Also wondering about pet policy.', 'new', CURRENT_DATE - INTERVAL '1 day'),
+  (v_prop3_id, 'Jennifer Adams', 'jadams@company.com', '(555) 234-5678', CURRENT_DATE + INTERVAL '55 days', CURRENT_DATE + INTERVAL '58 days', 10, 'Looking for a corporate retreat venue. Do you offer any discounts for 3+ night stays? We need space for 10 people with good WiFi for remote meetings.', 'contacted', CURRENT_DATE - INTERVAL '3 days'),
+  (v_prop5_id, 'Mike Chen', 'mchen@email.com', NULL, CURRENT_DATE + INTERVAL '45 days', CURRENT_DATE + INTERVAL '50 days', 4, 'Is the lake good for fishing in late winter/early spring? We''re a group of 4 looking for a fishing getaway. What fish are typically caught?', 'new', CURRENT_DATE - INTERVAL '2 hours'),
+  (v_prop2_id, 'Sandra White', 'swhite@email.com', '(555) 345-6789', CURRENT_DATE + INTERVAL '35 days', CURRENT_DATE + INTERVAL '38 days', 2, 'My husband and I are celebrating our 30th anniversary. Is the cabin romantic? Can you arrange any special touches like flowers or champagne?', 'converted', CURRENT_DATE - INTERVAL '5 days'),
+  (v_prop4_id, 'Rachel Green', 'rgreen@wellness.com', '(555) 456-7890', CURRENT_DATE + INTERVAL '60 days', CURRENT_DATE + INTERVAL '64 days', 6, 'I run wellness retreats and your ranch looks perfect. Can we use the outdoor space for yoga? Is it quiet in the mornings? How are the horses for beginners?', 'new', CURRENT_DATE - INTERVAL '6 hours'),
+  (v_prop1_id, 'Steve Morton', 'smorton@family.com', '(555) 567-8901', CURRENT_DATE + INTERVAL '70 days', CURRENT_DATE + INTERVAL '77 days', 10, 'Planning a multi-family vacation. The kids (ages 8-15) love hiking and the hot tub. Are there good trails nearby? Is the game room kid-friendly?', 'contacted', CURRENT_DATE - INTERVAL '4 days');
 
   RAISE NOTICE 'Test data seeded successfully!';
-  RAISE NOTICE 'Created: 5 properties, 10 guests, 3 vendors, ~40 bookings, maintenance tasks, expenses, and inquiries';
+  RAISE NOTICE 'Created: 5 properties, 15 guests, 4 vendors, 55+ bookings, 70+ maintenance tasks, 80+ expenses, and 6 inquiries';
 END $$;
