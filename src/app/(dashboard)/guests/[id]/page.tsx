@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
-import { redirect, notFound } from 'next/navigation'
+import { notFound } from 'next/navigation'
+// import { redirect } from 'next/navigation' // TEMPORARILY DISABLED FOR DEMO
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -44,13 +45,14 @@ export default async function GuestDetailPage({
   const { id } = await params
   const supabase = await createClient()
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  // TEMPORARILY DISABLED FOR DEMO
+  // const {
+  //   data: { user },
+  // } = await supabase.auth.getUser()
 
-  if (!user) {
-    redirect('/login')
-  }
+  // if (!user) {
+  //   redirect('/login')
+  // }
 
   // Fetch guest with bookings and communications
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

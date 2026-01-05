@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
+// import { redirect } from 'next/navigation' // TEMPORARILY DISABLED FOR DEMO
 import { startOfMonth, endOfMonth, subMonths, format, differenceInDays, startOfYear, endOfYear } from 'date-fns'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -31,13 +31,14 @@ interface ExpenseWithDetails extends Expense {
 export default async function FinancialsPage() {
   const supabase = await createClient()
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  // TEMPORARILY DISABLED FOR DEMO
+  // const {
+  //   data: { user },
+  // } = await supabase.auth.getUser()
 
-  if (!user) {
-    redirect('/login')
-  }
+  // if (!user) {
+  //   redirect('/login')
+  // }
 
   const now = new Date()
   const thisMonthStart = startOfMonth(now)

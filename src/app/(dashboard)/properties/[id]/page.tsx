@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
-import { redirect, notFound } from 'next/navigation'
+import { notFound } from 'next/navigation'
+// import { redirect } from 'next/navigation' // TEMPORARILY DISABLED FOR DEMO
 import Link from 'next/link'
 import { ArrowLeft, MapPin, Clock, Calendar, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -19,13 +20,14 @@ export default async function PropertyDetailPage({ params }: Props) {
   const { id } = await params
   const supabase = await createClient()
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  // TEMPORARILY DISABLED FOR DEMO
+  // const {
+  //   data: { user },
+  // } = await supabase.auth.getUser()
 
-  if (!user) {
-    redirect('/login')
-  }
+  // if (!user) {
+  //   redirect('/login')
+  // }
 
   // Fetch property
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
+// import { redirect } from 'next/navigation' // TEMPORARILY DISABLED FOR DEMO
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { VendorsTable } from '@/components/settings/vendors-table'
@@ -9,13 +9,14 @@ import type { Vendor } from '@/types/database'
 export default async function SettingsPage() {
   const supabase = await createClient()
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  // TEMPORARILY DISABLED FOR DEMO
+  // const {
+  //   data: { user },
+  // } = await supabase.auth.getUser()
 
-  if (!user) {
-    redirect('/login')
-  }
+  // if (!user) {
+  //   redirect('/login')
+  // }
 
   // Fetch vendors
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -64,13 +65,11 @@ export default async function SettingsPage() {
             <CardContent className="space-y-4">
               <div>
                 <p className="text-sm font-medium">Email</p>
-                <p className="text-muted-foreground">{user.email}</p>
+                <p className="text-muted-foreground">Demo Mode</p>
               </div>
               <div>
                 <p className="text-sm font-medium">Name</p>
-                <p className="text-muted-foreground">
-                  {user.user_metadata?.name || 'Not set'}
-                </p>
+                <p className="text-muted-foreground">Demo User</p>
               </div>
             </CardContent>
           </Card>

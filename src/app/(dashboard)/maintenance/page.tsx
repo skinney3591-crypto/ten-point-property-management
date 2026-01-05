@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
+// import { redirect } from 'next/navigation' // TEMPORARILY DISABLED FOR DEMO
 import { MaintenanceTable } from '@/components/maintenance/maintenance-table'
 import { AddMaintenanceButton } from '@/components/maintenance/add-maintenance-button'
 import { MaintenanceFilters } from '@/components/maintenance/maintenance-filters'
@@ -13,13 +13,14 @@ interface MaintenanceWithDetails extends MaintenanceTask {
 export default async function MaintenancePage() {
   const supabase = await createClient()
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  // TEMPORARILY DISABLED FOR DEMO
+  // const {
+  //   data: { user },
+  // } = await supabase.auth.getUser()
 
-  if (!user) {
-    redirect('/login')
-  }
+  // if (!user) {
+  //   redirect('/login')
+  // }
 
   // Fetch maintenance tasks with property and vendor info
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

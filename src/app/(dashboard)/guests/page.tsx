@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
+// import { redirect } from 'next/navigation' // TEMPORARILY DISABLED FOR DEMO
 import { GuestsTable } from '@/components/guests/guests-table'
 import { GuestSearch } from '@/components/guests/guest-search'
 import { AddGuestButton } from '@/components/guests/add-guest-button'
@@ -14,13 +14,14 @@ interface GuestWithBookings extends Guest {
 export default async function GuestsPage() {
   const supabase = await createClient()
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  // TEMPORARILY DISABLED FOR DEMO
+  // const {
+  //   data: { user },
+  // } = await supabase.auth.getUser()
 
-  if (!user) {
-    redirect('/login')
-  }
+  // if (!user) {
+  //   redirect('/login')
+  // }
 
   // Fetch guests with their bookings
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
