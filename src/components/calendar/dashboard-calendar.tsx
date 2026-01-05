@@ -5,6 +5,8 @@ import { Calendar, dateFnsLocalizer, Views } from 'react-big-calendar'
 import { format, parse, startOfWeek, getDay } from 'date-fns'
 import { enUS } from 'date-fns/locale'
 import { createClient } from '@/lib/supabase/client'
+import { Button } from '@/components/ui/button'
+import { LogIn, LogOut, Wrench, CalendarDays } from 'lucide-react'
 import type { Booking, Property, MaintenanceTask } from '@/types/database'
 import 'react-big-calendar/lib/css/react-big-calendar.css'
 
@@ -20,6 +22,8 @@ const localizer = dateFnsLocalizer({
   locales,
 })
 
+type EventType = 'booking' | 'check-in' | 'check-out' | 'maintenance'
+
 interface CalendarEvent {
   id: string
   title: string
@@ -27,7 +31,7 @@ interface CalendarEvent {
   end: Date
   allDay?: boolean
   resource: {
-    type: 'booking' | 'maintenance'
+    type: EventType
     propertyId?: string
     data: Booking | MaintenanceTask
   }
@@ -58,6 +62,9 @@ export function DashboardCalendar() {
   const [events, setEvents] = useState<CalendarEvent[]>([])
   const [properties, setProperties] = useState<Property[]>([])
   const [loading, setLoading] = useState(true)
+  const [showBookings, setShowBookings] = useState(true)
+  const [showCheckIn, setShowCheckIn] = useState(false)
+  const [showCheckOut, setShowCheckOut] = useState(false)
   const [showMaintenance, setShowMaintenance] = useState(true)
   const supabase = createClient()
 
@@ -94,10 +101,12 @@ export function DashboardCalendar() {
 
       const allEvents: CalendarEvent[] = []
 
-      // Add booking events
+      // Add booking events (booking spans, check-ins, and check-outs)
       if (bookingsData) {
         bookingsData.forEach((booking) => {
           const property = booking.properties
+
+          // Booking span (full duration)
           allEvents.push({
             id: `booking-${booking.id}`,
             title: `${property?.name || 'Unknown'} - ${booking.source}`,
@@ -105,6 +114,34 @@ export function DashboardCalendar() {
             end: new Date(booking.check_out),
             resource: {
               type: 'booking',
+              propertyId: property?.id,
+              data: booking,
+            },
+          })
+
+          // Check-in marker
+          allEvents.push({
+            id: `checkin-${booking.id}`,
+            title: `↓ Check-in: ${property?.name || 'Unknown'}`,
+            start: new Date(booking.check_in),
+            end: new Date(booking.check_in),
+            allDay: true,
+            resource: {
+              type: 'check-in',
+              propertyId: property?.id,
+              data: booking,
+            },
+          })
+
+          // Check-out marker
+          allEvents.push({
+            id: `checkout-${booking.id}`,
+            title: `↑ Check-out: ${property?.name || 'Unknown'}`,
+            start: new Date(booking.check_out),
+            end: new Date(booking.check_out),
+            allDay: true,
+            resource: {
+              type: 'check-out',
               propertyId: property?.id,
               data: booking,
             },
@@ -148,30 +185,70 @@ export function DashboardCalendar() {
     return map
   }, [properties])
 
-  // Filter events based on showMaintenance toggle
+  // Filter events based on toggles
   const filteredEvents = useMemo(() => {
-    if (showMaintenance) return events
-    return events.filter((e) => e.resource.type === 'booking')
-  }, [events, showMaintenance])
+    return events.filter((e) => {
+      switch (e.resource.type) {
+        case 'booking':
+          return showBookings
+        case 'check-in':
+          return showCheckIn
+        case 'check-out':
+          return showCheckOut
+        case 'maintenance':
+          return showMaintenance
+        default:
+          return true
+      }
+    })
+  }, [events, showBookings, showCheckIn, showCheckOut, showMaintenance])
 
   // Event styling based on type and property
   const eventStyleGetter = (event: CalendarEvent) => {
+    const propertyColor = propertyColorMap.get(event.resource.propertyId || '') || '#6b7280'
+
     if (event.resource.type === 'maintenance') {
       return {
         style: {
-          backgroundColor: '#f3f4f6',
-          borderLeft: `3px solid ${propertyColorMap.get(event.resource.propertyId || '') || '#6b7280'}`,
+          backgroundColor: '#fef3c7',
+          borderLeft: `3px solid #f59e0b`,
           borderRadius: '4px',
-          color: '#374151',
+          color: '#92400e',
           fontSize: '11px',
         },
       }
     }
 
-    const color = propertyColorMap.get(event.resource.propertyId || '') || '#6b7280'
+    if (event.resource.type === 'check-in') {
+      return {
+        style: {
+          backgroundColor: '#dcfce7',
+          borderLeft: `3px solid #22c55e`,
+          borderRadius: '4px',
+          color: '#166534',
+          fontSize: '11px',
+          fontWeight: '500',
+        },
+      }
+    }
+
+    if (event.resource.type === 'check-out') {
+      return {
+        style: {
+          backgroundColor: '#fee2e2',
+          borderLeft: `3px solid #ef4444`,
+          borderRadius: '4px',
+          color: '#991b1b',
+          fontSize: '11px',
+          fontWeight: '500',
+        },
+      }
+    }
+
+    // Booking span
     return {
       style: {
-        backgroundColor: color,
+        backgroundColor: propertyColor,
         borderRadius: '4px',
         opacity: 0.9,
         color: 'white',
@@ -202,17 +279,45 @@ export function DashboardCalendar() {
 
   return (
     <div className="space-y-4">
-      {/* Toggle for maintenance */}
-      <div className="flex items-center gap-2">
-        <label className="flex items-center gap-2 text-sm">
-          <input
-            type="checkbox"
-            checked={showMaintenance}
-            onChange={(e) => setShowMaintenance(e.target.checked)}
-            className="rounded border-gray-300"
-          />
-          Show maintenance tasks
-        </label>
+      {/* Filter toggles */}
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-sm text-muted-foreground mr-2">Show:</span>
+        <Button
+          variant={showBookings ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setShowBookings(!showBookings)}
+          className={showBookings ? 'bg-blue-600 hover:bg-blue-700' : ''}
+        >
+          <CalendarDays className="h-4 w-4 mr-1" />
+          Stays
+        </Button>
+        <Button
+          variant={showCheckIn ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setShowCheckIn(!showCheckIn)}
+          className={showCheckIn ? 'bg-green-600 hover:bg-green-700' : ''}
+        >
+          <LogIn className="h-4 w-4 mr-1" />
+          Check-ins
+        </Button>
+        <Button
+          variant={showCheckOut ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setShowCheckOut(!showCheckOut)}
+          className={showCheckOut ? 'bg-red-500 hover:bg-red-600' : ''}
+        >
+          <LogOut className="h-4 w-4 mr-1" />
+          Check-outs
+        </Button>
+        <Button
+          variant={showMaintenance ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setShowMaintenance(!showMaintenance)}
+          className={showMaintenance ? 'bg-amber-500 hover:bg-amber-600' : ''}
+        >
+          <Wrench className="h-4 w-4 mr-1" />
+          Maintenance
+        </Button>
       </div>
 
       <div className="h-[600px]">
@@ -234,25 +339,43 @@ export function DashboardCalendar() {
 
       {/* Legend */}
       <div className="flex flex-wrap items-center gap-6">
-        <div className="flex flex-wrap gap-4">
-          {properties.map((property, index) => (
-            <div key={property.id} className="flex items-center gap-2">
-              <div
-                className="h-3 w-3 rounded"
-                style={{
-                  backgroundColor: propertyColors[index % propertyColors.length],
-                }}
-              />
-              <span className="text-sm text-muted-foreground">{property.name}</span>
-            </div>
-          ))}
-        </div>
-        {showMaintenance && (
-          <div className="flex items-center gap-2 border-l pl-4">
-            <div className="h-3 w-3 rounded bg-gray-200" />
-            <span className="text-sm text-muted-foreground">Maintenance</span>
+        {/* Property colors - only show if stays are visible */}
+        {showBookings && (
+          <div className="flex flex-wrap gap-4">
+            {properties.map((property, index) => (
+              <div key={property.id} className="flex items-center gap-2">
+                <div
+                  className="h-3 w-3 rounded"
+                  style={{
+                    backgroundColor: propertyColors[index % propertyColors.length],
+                  }}
+                />
+                <span className="text-sm text-muted-foreground">{property.name}</span>
+              </div>
+            ))}
           </div>
         )}
+        {/* Event type legend */}
+        <div className="flex items-center gap-4 border-l pl-4">
+          {showCheckIn && (
+            <div className="flex items-center gap-2">
+              <div className="h-3 w-3 rounded bg-green-200 border-l-2 border-green-500" />
+              <span className="text-sm text-muted-foreground">Check-in</span>
+            </div>
+          )}
+          {showCheckOut && (
+            <div className="flex items-center gap-2">
+              <div className="h-3 w-3 rounded bg-red-200 border-l-2 border-red-500" />
+              <span className="text-sm text-muted-foreground">Check-out</span>
+            </div>
+          )}
+          {showMaintenance && (
+            <div className="flex items-center gap-2">
+              <div className="h-3 w-3 rounded bg-amber-200 border-l-2 border-amber-500" />
+              <span className="text-sm text-muted-foreground">Maintenance</span>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )
