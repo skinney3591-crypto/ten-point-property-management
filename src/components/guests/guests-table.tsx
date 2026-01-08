@@ -42,7 +42,7 @@ import {
   MessageSquare,
   Star,
 } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
+import { getSupabaseBrowser } from '@/lib/supabase/client-queries'
 import { toast } from 'sonner'
 import { EditGuestDialog } from './edit-guest-dialog'
 import { SendMessageDialog } from './send-message-dialog'
@@ -63,7 +63,7 @@ export function GuestsTable({ guests: initialGuests }: GuestsTableProps) {
   const [messageGuest, setMessageGuest] = useState<GuestWithBookings | null>(null)
   const router = useRouter()
   const searchParams = useSearchParams()
-  const supabase = createClient()
+  const supabase = getSupabaseBrowser()
 
   // Filter guests based on search
   const searchQuery = searchParams.get('q')?.toLowerCase() || ''
@@ -79,8 +79,7 @@ export function GuestsTable({ guests: initialGuests }: GuestsTableProps) {
   const handleDelete = async () => {
     if (!deleteId) return
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error } = await (supabase.from('guests') as any)
+    const { error } = await supabase.from('guests')
       .delete()
       .eq('id', deleteId)
 
@@ -220,7 +219,7 @@ export function GuestsTable({ guests: initialGuests }: GuestsTableProps) {
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
+                        <Button variant="ghost" size="icon" aria-label="Open guest menu">
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>

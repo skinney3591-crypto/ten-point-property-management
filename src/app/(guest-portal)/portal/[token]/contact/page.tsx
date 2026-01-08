@@ -24,7 +24,7 @@ import {
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
-import type { Guest } from '@/types/database'
+import type { Guest, GuestCommunicationInsert } from '@/types/database'
 
 interface FormData {
   subject: string
@@ -60,16 +60,26 @@ export default function ContactPage({
     async function init() {
       const { token } = await params
 
-      // Get guest from token
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data: tokenData } = await (supabase
+      // Get guest from token - using typed query
+      const { data: tokenData, error: tokenError } = await supabase
         .from('guest_portal_tokens')
-        .select('*, guests(*)')
+        .select('guest_id')
         .eq('token', token)
-        .single() as any)
+        .single() as { data: { guest_id: string } | null; error: unknown }
 
-      if (tokenData?.guests) {
-        setGuest(tokenData.guests)
+      if (tokenError || !tokenData) {
+        console.error('Failed to fetch token:', tokenError)
+        return
+      }
+
+      const { data: guestData, error: guestError } = await supabase
+        .from('guests')
+        .select('*')
+        .eq('id', tokenData.guest_id)
+        .single()
+
+      if (!guestError && guestData) {
+        setGuest(guestData as Guest)
       }
     }
     init()
@@ -80,16 +90,19 @@ export default function ContactPage({
 
     setLoading(true)
 
-    // Log the message as a communication
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error } = await (supabase.from('guest_communications') as any).insert({
+    // Log the message as a communication - using typed insert
+    const communication: GuestCommunicationInsert = {
       guest_id: guest.id,
       type: 'email',
       direction: 'in',
       subject: `[${data.category}] ${data.subject}`,
       content: data.message,
       sent_at: new Date().toISOString(),
-    })
+    }
+
+    const { error } = await supabase
+      .from('guest_communications')
+      .insert(communication as never)
 
     if (error) {
       toast.error('Failed to send message')

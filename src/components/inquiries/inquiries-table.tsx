@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { MoreHorizontal, Mail, Phone, Calendar, Users, MessageSquare } from 'lucide-react'
 import { format } from 'date-fns'
-import { createClient } from '@/lib/supabase/client'
+import { getSupabaseBrowser } from '@/lib/supabase/client-queries'
 import { toast } from 'sonner'
 import {
   Dialog,
@@ -62,11 +62,11 @@ export function InquiriesTable({ inquiries: initialInquiries }: InquiriesTablePr
   const [selectedInquiry, setSelectedInquiry] = useState<Inquiry | null>(null)
 
   const updateStatus = async (id: string, status: string) => {
-    const supabase = createClient()
+    const supabase = getSupabaseBrowser()
 
-    const { error } = await (supabase
-      .from('inquiries') as any)
-      .update({ status })
+    const { error } = await supabase
+      .from('inquiries')
+      .update({ status } as never)
       .eq('id', id)
 
     if (error) {
@@ -152,7 +152,7 @@ export function InquiriesTable({ inquiries: initialInquiries }: InquiriesTablePr
                 <TableCell onClick={(e) => e.stopPropagation()}>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon">
+                      <Button variant="ghost" size="icon" aria-label="Open inquiry menu">
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>

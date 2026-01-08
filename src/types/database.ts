@@ -45,6 +45,9 @@ export type Database = {
           house_rules: string | null
           check_in_time: string | null
           check_out_time: string | null
+          photos: string[] | null
+          is_public: boolean
+          nightly_rate: number | null
           created_at: string
         }
         Insert: {
@@ -59,6 +62,9 @@ export type Database = {
           house_rules?: string | null
           check_in_time?: string | null
           check_out_time?: string | null
+          photos?: string[] | null
+          is_public?: boolean
+          nightly_rate?: number | null
           created_at?: string
         }
         Update: {
@@ -73,6 +79,9 @@ export type Database = {
           house_rules?: string | null
           check_in_time?: string | null
           check_out_time?: string | null
+          photos?: string[] | null
+          is_public?: boolean
+          nightly_rate?: number | null
           created_at?: string
         }
       }
@@ -302,6 +311,47 @@ export type Database = {
           subject?: string | null
           content?: string
           sent_at?: string
+        }
+      }
+      inquiries: {
+        Row: {
+          id: string
+          property_id: string
+          name: string
+          email: string
+          phone: string | null
+          check_in: string | null
+          check_out: string | null
+          guests: number | null
+          message: string
+          status: 'new' | 'contacted' | 'converted' | 'declined'
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          property_id: string
+          name: string
+          email: string
+          phone?: string | null
+          check_in?: string | null
+          check_out?: string | null
+          guests?: number | null
+          message: string
+          status?: 'new' | 'contacted' | 'converted' | 'declined'
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          property_id?: string
+          name?: string
+          email?: string
+          phone?: string | null
+          check_in?: string | null
+          check_out?: string | null
+          guests?: number | null
+          message?: string
+          status?: 'new' | 'contacted' | 'converted' | 'declined'
+          created_at?: string
         }
       }
       reviews: {

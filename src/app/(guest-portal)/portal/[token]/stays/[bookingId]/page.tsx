@@ -14,11 +14,11 @@ import {
   Home,
   FileText,
   Wifi,
-  Key,
   Phone,
   AlertCircle,
 } from 'lucide-react'
 import { CheckInInstructions } from '@/components/portal/check-in-instructions'
+import { getPortalTokenByToken, getGuestById } from '@/lib/supabase/queries'
 import type { Guest, Booking, Property } from '@/types/database'
 
 interface BookingWithProperty extends Booking {
@@ -33,28 +33,26 @@ export default async function StayDetailPage({
   const { token, bookingId } = await params
   const supabase = await createClient()
 
-  // Verify token and get guest
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: tokenData } = await (supabase
-    .from('guest_portal_tokens')
-    .select('*, guests(*)')
-    .eq('token', token)
-    .single() as any) as { data: { guests: Guest } | null }
+  // Verify token and get guest using typed helpers
+  const tokenData = await getPortalTokenByToken(token)
 
   if (!tokenData) {
     notFound()
   }
 
-  const guest = tokenData.guests
+  const guest = await getGuestById(tokenData.guest_id)
 
-  // Get booking details
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: booking } = await (supabase
+  if (!guest) {
+    notFound()
+  }
+
+  // Get booking details with property (complex query without helper)
+  const { data: booking } = await supabase
     .from('bookings')
     .select('*, properties(*)')
     .eq('id', bookingId)
     .eq('guest_id', guest.id)
-    .single() as any) as { data: BookingWithProperty | null }
+    .single() as { data: BookingWithProperty | null }
 
   if (!booking) {
     notFound()

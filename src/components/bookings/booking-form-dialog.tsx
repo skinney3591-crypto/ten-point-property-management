@@ -24,7 +24,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
-import { createClient } from '@/lib/supabase/client'
+import { getSupabaseBrowser } from '@/lib/supabase/client-queries'
 import { toast } from 'sonner'
 import type { BookingInsert, GuestInsert } from '@/types/database'
 
@@ -61,7 +61,7 @@ export function BookingFormDialog({
 }: BookingFormDialogProps) {
   const [loading, setLoading] = useState(false)
   const router = useRouter()
-  const supabase = createClient()
+  const supabase = getSupabaseBrowser()
 
   const {
     register,
@@ -106,12 +106,11 @@ export function BookingFormDialog({
 
       if (data.guest_name && data.guest_email) {
         // Check if guest exists
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { data: existingGuest } = (await (supabase
+        const { data: existingGuest } = await supabase
           .from('guests')
           .select('id')
           .eq('email', data.guest_email)
-          .single() as any)) as { data: { id: string } | null }
+          .single() as { data: { id: string } | null }
 
         if (existingGuest) {
           guestId = existingGuest.id
@@ -124,11 +123,10 @@ export function BookingFormDialog({
             phone: data.guest_phone || null,
           }
 
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const { data: createdGuest, error: guestError } = await (supabase.from('guests') as any)
-            .insert(newGuest)
+          const { data: createdGuest, error: guestError } = await supabase.from('guests')
+            .insert(newGuest as never)
             .select('id')
-            .single() as { data: { id: string } | null; error: Error | null }
+            .single() as { data: { id: string } | null; error: unknown }
 
           if (guestError) {
             throw new Error('Failed to create guest')
@@ -153,8 +151,7 @@ export function BookingFormDialog({
         status: 'confirmed',
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error: bookingError } = await (supabase.from('bookings') as any).insert(booking)
+      const { error: bookingError } = await supabase.from('bookings').insert(booking as never)
 
       if (bookingError) {
         throw new Error('Failed to create booking')

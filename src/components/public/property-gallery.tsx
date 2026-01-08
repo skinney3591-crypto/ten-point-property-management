@@ -85,6 +85,7 @@ export function PropertyGallery({ photos, propertyName }: PropertyGalleryProps) 
             size="icon"
             className="absolute top-4 right-4 text-white hover:bg-white/20"
             onClick={closeLightbox}
+            aria-label="Close gallery"
           >
             <X className="h-6 w-6" />
           </Button>
@@ -94,6 +95,7 @@ export function PropertyGallery({ photos, propertyName }: PropertyGalleryProps) 
             size="icon"
             className="absolute left-4 text-white hover:bg-white/20"
             onClick={goToPrev}
+            aria-label="Previous photo"
           >
             <ChevronLeft className="h-8 w-8" />
           </Button>
@@ -112,6 +114,7 @@ export function PropertyGallery({ photos, propertyName }: PropertyGalleryProps) 
             size="icon"
             className="absolute right-4 text-white hover:bg-white/20"
             onClick={goToNext}
+            aria-label="Next photo"
           >
             <ChevronRight className="h-8 w-8" />
           </Button>

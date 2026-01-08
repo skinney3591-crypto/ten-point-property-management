@@ -82,13 +82,13 @@ export function AvailabilityCalendar({ bookings }: AvailabilityCalendarProps) {
   return (
     <div className="bg-white rounded-lg border p-4">
       <div className="flex items-center justify-between mb-4">
-        <Button variant="ghost" size="sm" onClick={prevMonth}>
+        <Button variant="ghost" size="sm" onClick={prevMonth} aria-label="Previous month">
           <ChevronLeft className="h-4 w-4" />
         </Button>
         <span className="font-semibold">
           {monthNames[month]} {year}
         </span>
-        <Button variant="ghost" size="sm" onClick={nextMonth}>
+        <Button variant="ghost" size="sm" onClick={nextMonth} aria-label="Next month">
           <ChevronRight className="h-4 w-4" />
         </Button>
       </div>

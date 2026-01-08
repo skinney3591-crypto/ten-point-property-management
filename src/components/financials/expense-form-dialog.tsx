@@ -23,7 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { createClient } from '@/lib/supabase/client'
+import { getSupabaseBrowser } from '@/lib/supabase/client-queries'
 import { toast } from 'sonner'
 import type { Property, Vendor, ExpenseInsert } from '@/types/database'
 
@@ -68,7 +68,7 @@ export function ExpenseFormDialog({
   const [loading, setLoading] = useState(false)
   const [vendors, setVendors] = useState<Vendor[]>([])
   const router = useRouter()
-  const supabase = createClient()
+  const supabase = getSupabaseBrowser()
 
   const {
     register,
@@ -89,11 +89,10 @@ export function ExpenseFormDialog({
 
   useEffect(() => {
     async function fetchVendors() {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data } = await (supabase
+      const { data } = await supabase
         .from('vendors')
         .select('*')
-        .order('name') as any) as { data: Vendor[] | null }
+        .order('name')
 
       if (data) {
         setVendors(data)
@@ -116,8 +115,7 @@ export function ExpenseFormDialog({
       vendor_id: data.vendor_id || null,
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error } = await (supabase.from('expenses') as any).insert(expense)
+    const { error } = await supabase.from('expenses').insert(expense as never)
 
     if (error) {
       toast.error('Failed to add expense')

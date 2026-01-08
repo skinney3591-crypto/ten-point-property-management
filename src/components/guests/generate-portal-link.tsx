@@ -119,6 +119,7 @@ export function GeneratePortalLink({
                     size="icon"
                     onClick={copyLink}
                     className="flex-shrink-0"
+                    aria-label="Copy portal link"
                   >
                     {copied ? (
                       <Check className="h-4 w-4 text-green-600" />

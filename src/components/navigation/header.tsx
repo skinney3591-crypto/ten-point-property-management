@@ -52,7 +52,7 @@ export function Header() {
       </div>
 
       <div className="flex items-center gap-2 md:gap-4">
-        <Button variant="ghost" size="icon" className="hidden sm:flex">
+        <Button variant="ghost" size="icon" className="hidden sm:flex" aria-label="Notifications">
           <Bell className="h-5 w-5" />
         </Button>
 

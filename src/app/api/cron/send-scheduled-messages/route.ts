@@ -14,6 +14,7 @@ import {
   checkoutReminderSms,
   postCheckoutSms,
 } from '@/lib/sms-templates'
+import { createCommunication } from '@/lib/supabase/queries'
 import type { Booking, Property, Guest, GuestCommunicationInsert } from '@/types/database'
 
 interface BookingWithDetails extends Booking {
@@ -49,7 +50,7 @@ export async function GET(request: NextRequest) {
   }
 
   // Get all relevant bookings
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: bookings } = (await (supabase
     .from('bookings')
     .select('*, properties(*), guests(*)')
@@ -73,7 +74,7 @@ export async function GET(request: NextRequest) {
     const checkOut = startOfDay(new Date(booking.check_out))
 
     // Generate portal URL for this guest
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: tokenData } = await (supabase
       .from('guest_portal_tokens')
       .select('token')
@@ -127,8 +128,13 @@ export async function GET(request: NextRequest) {
           })
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await (supabase.from('guest_communications') as any).insert(logs)
+        for (const log of logs) {
+          try {
+            await createCommunication(log)
+          } catch (err) {
+            console.error('Failed to log communication:', err)
+          }
+        }
 
         if (emailResult.success) {
           results.preArrival.sent++
@@ -157,8 +163,11 @@ export async function GET(request: NextRequest) {
             content: '[Auto: Check-in day welcome]',
             sent_at: new Date().toISOString(),
           }
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          await (supabase.from('guest_communications') as any).insert(log)
+          try {
+            await createCommunication(log)
+          } catch (err) {
+            console.error('Failed to log communication:', err)
+          }
 
           if (smsResult.success) {
             results.checkInDay.sent++
@@ -187,8 +196,11 @@ export async function GET(request: NextRequest) {
             content: '[Auto: Checkout reminder]',
             sent_at: new Date().toISOString(),
           }
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          await (supabase.from('guest_communications') as any).insert(log)
+          try {
+            await createCommunication(log)
+          } catch (err) {
+            console.error('Failed to log communication:', err)
+          }
 
           if (smsResult.success) {
             results.checkoutReminder.sent++
@@ -229,8 +241,11 @@ export async function GET(request: NextRequest) {
           content: '[Auto: Post-checkout thank you]',
           sent_at: new Date().toISOString(),
         }
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await (supabase.from('guest_communications') as any).insert(log)
+        try {
+          await createCommunication(log)
+        } catch (err) {
+          console.error('Failed to log communication:', err)
+        }
 
         if (emailResult.success) {
           results.postCheckout.sent++
@@ -265,8 +280,11 @@ export async function GET(request: NextRequest) {
           content: '[Auto: Review request]',
           sent_at: new Date().toISOString(),
         }
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await (supabase.from('guest_communications') as any).insert(log)
+        try {
+          await createCommunication(log)
+        } catch (err) {
+          console.error('Failed to log communication:', err)
+        }
 
         if (emailResult.success) {
           results.reviewRequest.sent++

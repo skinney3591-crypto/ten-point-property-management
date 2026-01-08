@@ -1,4 +1,10 @@
-import { createClient } from '@/lib/supabase/server'
+import {
+  getProperties,
+  getBookingsInRangeWithProperty,
+  getExpensesInRangeWithDetails,
+  type BookingWithProperty,
+  type ExpenseWithDetails,
+} from '@/lib/supabase/queries'
 // import { redirect } from 'next/navigation' // TEMPORARILY DISABLED FOR DEMO
 import { startOfMonth, endOfMonth, subMonths, format, differenceInDays, startOfYear, endOfYear } from 'date-fns'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -17,20 +23,8 @@ import { AddExpenseButton } from '@/components/financials/add-expense-button'
 import { RevenueChart } from '@/components/financials/revenue-chart'
 import { PropertyBreakdown } from '@/components/financials/property-breakdown'
 import { OccupancyStats } from '@/components/financials/occupancy-stats'
-import type { Booking, Property, Expense, Vendor } from '@/types/database'
-
-interface BookingWithProperty extends Booking {
-  properties: Property
-}
-
-interface ExpenseWithDetails extends Expense {
-  properties: Property
-  vendors: Vendor | null
-}
 
 export default async function FinancialsPage() {
-  const supabase = await createClient()
-
   // TEMPORARILY DISABLED FOR DEMO
   // const {
   //   data: { user },
@@ -48,66 +42,48 @@ export default async function FinancialsPage() {
   const yearStart = startOfYear(now)
   const yearEnd = endOfYear(now)
 
-  // Fetch properties
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: properties } = await (supabase
-    .from('properties')
-    .select('*')
-    .order('name') as any) as { data: Property[] | null }
-
-  // Fetch all bookings for the year
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: bookings } = await (supabase
-    .from('bookings')
-    .select('*, properties(*)')
-    .gte('check_in', yearStart.toISOString())
-    .lte('check_out', yearEnd.toISOString())
-    .neq('status', 'cancelled') as any) as { data: BookingWithProperty[] | null }
-
-  // Fetch all expenses for the year
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: expenses } = await (supabase
-    .from('expenses')
-    .select('*, properties(*), vendors(*)')
-    .gte('date', yearStart.toISOString())
-    .lte('date', yearEnd.toISOString())
-    .order('date', { ascending: false }) as any) as { data: ExpenseWithDetails[] | null }
+  // Fetch properties, bookings, and expenses in parallel
+  const [properties, bookings, expenses] = await Promise.all([
+    getProperties(),
+    getBookingsInRangeWithProperty(yearStart, yearEnd),
+    getExpensesInRangeWithDetails(yearStart, yearEnd),
+  ])
 
   // Calculate this month's revenue
-  const thisMonthBookings = bookings?.filter((b) => {
+  const thisMonthBookings = bookings.filter((b) => {
     const checkIn = new Date(b.check_in)
     return checkIn >= thisMonthStart && checkIn <= thisMonthEnd
-  }) || []
+  })
   const thisMonthRevenue = thisMonthBookings.reduce(
     (sum, b) => sum + (b.payout_amount || b.total_amount || 0),
     0
   )
 
   // Calculate last month's revenue for comparison
-  const lastMonthBookings = bookings?.filter((b) => {
+  const lastMonthBookings = bookings.filter((b) => {
     const checkIn = new Date(b.check_in)
     return checkIn >= lastMonthStart && checkIn <= lastMonthEnd
-  }) || []
+  })
   const lastMonthRevenue = lastMonthBookings.reduce(
     (sum, b) => sum + (b.payout_amount || b.total_amount || 0),
     0
   )
 
   // Calculate this month's expenses
-  const thisMonthExpenses = expenses?.filter((e) => {
+  const thisMonthExpenses = expenses.filter((e) => {
     const date = new Date(e.date)
     return date >= thisMonthStart && date <= thisMonthEnd
-  }) || []
+  })
   const thisMonthExpenseTotal = thisMonthExpenses.reduce(
     (sum, e) => sum + e.amount,
     0
   )
 
   // Calculate last month's expenses
-  const lastMonthExpenseList = expenses?.filter((e) => {
+  const lastMonthExpenseList = expenses.filter((e) => {
     const date = new Date(e.date)
     return date >= lastMonthStart && date <= lastMonthEnd
-  }) || []
+  })
   const lastMonthExpenseTotal = lastMonthExpenseList.reduce(
     (sum, e) => sum + e.amount,
     0
@@ -118,11 +94,11 @@ export default async function FinancialsPage() {
   const lastMonthProfit = lastMonthRevenue - lastMonthExpenseTotal
 
   // Calculate year-to-date totals
-  const ytdRevenue = bookings?.reduce(
+  const ytdRevenue = bookings.reduce(
     (sum, b) => sum + (b.payout_amount || b.total_amount || 0),
     0
-  ) || 0
-  const ytdExpenses = expenses?.reduce((sum, e) => sum + e.amount, 0) || 0
+  )
+  const ytdExpenses = expenses.reduce((sum, e) => sum + e.amount, 0)
   const ytdProfit = ytdRevenue - ytdExpenses
 
   // Revenue change percentage
@@ -131,7 +107,7 @@ export default async function FinancialsPage() {
     : 0
 
   // Calculate occupancy rate for this month
-  const totalPropertyDays = (properties?.length || 0) * differenceInDays(thisMonthEnd, thisMonthStart)
+  const totalPropertyDays = properties.length * differenceInDays(thisMonthEnd, thisMonthStart)
   const occupiedDays = thisMonthBookings.reduce((sum, b) => {
     const checkIn = new Date(b.check_in)
     const checkOut = new Date(b.check_out)
@@ -152,7 +128,7 @@ export default async function FinancialsPage() {
             Track revenue, expenses, and profitability across your properties
           </p>
         </div>
-        <AddExpenseButton properties={properties || []} />
+        <AddExpenseButton properties={properties} />
       </div>
 
       {/* Key Metrics */}
@@ -266,25 +242,25 @@ export default async function FinancialsPage() {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
-          <RevenueChart bookings={bookings || []} expenses={expenses || []} />
+          <RevenueChart bookings={bookings} expenses={expenses} />
         </TabsContent>
 
         <TabsContent value="expenses">
-          <ExpensesTable expenses={expenses || []} properties={properties || []} />
+          <ExpensesTable expenses={expenses} properties={properties} />
         </TabsContent>
 
         <TabsContent value="properties">
           <PropertyBreakdown
-            properties={properties || []}
-            bookings={bookings || []}
-            expenses={expenses || []}
+            properties={properties}
+            bookings={bookings}
+            expenses={expenses}
           />
         </TabsContent>
 
         <TabsContent value="occupancy">
           <OccupancyStats
-            properties={properties || []}
-            bookings={bookings || []}
+            properties={properties}
+            bookings={bookings}
           />
         </TabsContent>
       </Tabs>

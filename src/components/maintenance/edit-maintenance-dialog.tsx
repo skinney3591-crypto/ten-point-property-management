@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { createClient } from '@/lib/supabase/client'
+import { getSupabaseBrowser } from '@/lib/supabase/client-queries'
 import { toast } from 'sonner'
 import type { MaintenanceTask, Property, Vendor } from '@/types/database'
 
@@ -77,7 +77,7 @@ export function EditMaintenanceDialog({
 }: EditMaintenanceDialogProps) {
   const [loading, setLoading] = useState(false)
   const [isRecurring, setIsRecurring] = useState(task.recurring)
-  const supabase = createClient()
+  const supabase = getSupabaseBrowser()
 
   const {
     register,
@@ -114,12 +114,11 @@ export function EditMaintenanceDialog({
       recurrence_rule: isRecurring ? data.recurrence_rule : null,
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: updated, error } = await (supabase.from('maintenance_tasks') as any)
-      .update(updates)
+    const { data: updated, error } = await supabase.from('maintenance_tasks')
+      .update(updates as never)
       .eq('id', task.id)
       .select('*, properties(*), vendors(*)')
-      .single() as { data: MaintenanceWithDetails | null; error: Error | null }
+      .single() as { data: MaintenanceWithDetails | null; error: unknown }
 
     if (error) {
       toast.error('Failed to update task')

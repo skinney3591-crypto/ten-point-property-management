@@ -1,19 +1,12 @@
-import { createClient } from '@/lib/supabase/server'
+import { getGuestsWithBookings } from '@/lib/supabase/queries'
 // import { redirect } from 'next/navigation' // TEMPORARILY DISABLED FOR DEMO
 import { GuestsTable } from '@/components/guests/guests-table'
 import { GuestSearch } from '@/components/guests/guest-search'
 import { AddGuestButton } from '@/components/guests/add-guest-button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Users, Mail, Star, Calendar } from 'lucide-react'
-import type { Guest, Booking } from '@/types/database'
-
-interface GuestWithBookings extends Guest {
-  bookings: Booking[]
-}
 
 export default async function GuestsPage() {
-  const supabase = await createClient()
-
   // TEMPORARILY DISABLED FOR DEMO
   // const {
   //   data: { user },
@@ -24,17 +17,13 @@ export default async function GuestsPage() {
   // }
 
   // Fetch guests with their bookings
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: guests } = (await (supabase
-    .from('guests')
-    .select('*, bookings(*)')
-    .order('name') as any)) as { data: GuestWithBookings[] | null }
+  const guests = await getGuestsWithBookings()
 
   // Calculate stats
-  const totalGuests = guests?.length || 0
-  const repeatGuests = guests?.filter((g) => g.bookings.length > 1).length || 0
-  const totalStays = guests?.reduce((sum, g) => sum + g.bookings.length, 0) || 0
-  const guestsWithEmail = guests?.filter((g) => g.email).length || 0
+  const totalGuests = guests.length
+  const repeatGuests = guests.filter((g) => g.bookings.length > 1).length
+  const totalStays = guests.reduce((sum, g) => sum + g.bookings.length, 0)
+  const guestsWithEmail = guests.filter((g) => g.email).length
 
   return (
     <div className="space-y-6">
@@ -106,7 +95,7 @@ export default async function GuestsPage() {
 
       <GuestSearch />
 
-      <GuestsTable guests={guests || []} />
+      <GuestsTable guests={guests} />
     </div>
   )
 }

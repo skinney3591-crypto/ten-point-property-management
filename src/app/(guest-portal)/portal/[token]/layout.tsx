@@ -1,8 +1,7 @@
-import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import { PortalHeader } from '@/components/portal/portal-header'
 import { PortalNav } from '@/components/portal/portal-nav'
-import type { Guest } from '@/types/database'
+import { getPortalTokenByToken, getGuestById } from '@/lib/supabase/queries'
 
 interface PortalLayoutProps {
   children: React.ReactNode
@@ -14,15 +13,9 @@ export default async function PortalLayout({
   params,
 }: PortalLayoutProps) {
   const { token } = await params
-  const supabase = await createClient()
 
-  // Verify the token
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: tokenData } = await (supabase
-    .from('guest_portal_tokens')
-    .select('*, guests(*)')
-    .eq('token', token)
-    .single() as any) as { data: { guests: Guest; expires_at: string } | null }
+  // Verify the token using typed helper
+  const tokenData = await getPortalTokenByToken(token)
 
   if (!tokenData) {
     notFound()
@@ -33,7 +26,11 @@ export default async function PortalLayout({
     notFound()
   }
 
-  const guest = tokenData.guests
+  const guest = await getGuestById(tokenData.guest_id)
+
+  if (!guest) {
+    notFound()
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">

@@ -4,7 +4,8 @@ import { sendEmail } from '@/lib/email'
 import { sendSms } from '@/lib/sms'
 import { customMessageEmail } from '@/lib/email-templates'
 import { customSms } from '@/lib/sms-templates'
-import type { Guest, GuestCommunicationInsert } from '@/types/database'
+import { getGuestById, createCommunication } from '@/lib/supabase/queries'
+import type { GuestCommunicationInsert } from '@/types/database'
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient()
@@ -27,14 +28,15 @@ export async function POST(request: NextRequest) {
   }
 
   // Get guest info
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: guest, error: guestError } = await (supabase
-    .from('guests')
-    .select('*')
-    .eq('id', guestId)
-    .single() as any) as { data: Guest | null; error: Error | null }
+  let guest
+  try {
+    guest = await getGuestById(guestId)
+  } catch (err) {
+    console.error('Error fetching guest:', err)
+    return NextResponse.json({ error: 'Failed to fetch guest' }, { status: 500 })
+  }
 
-  if (guestError || !guest) {
+  if (!guest) {
     return NextResponse.json({ error: 'Guest not found' }, { status: 404 })
   }
 
@@ -83,8 +85,11 @@ export async function POST(request: NextRequest) {
     sent_at: new Date().toISOString(),
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  await (supabase.from('guest_communications') as any).insert(communication)
+  try {
+    await createCommunication(communication)
+  } catch (err) {
+    console.error('Failed to log communication:', err)
+  }
 
   if (!sendResult.success) {
     return NextResponse.json({

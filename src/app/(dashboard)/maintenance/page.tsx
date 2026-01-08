@@ -1,18 +1,14 @@
-import { createClient } from '@/lib/supabase/server'
+import {
+  getMaintenanceTasksWithDetails,
+  getProperties,
+  getVendors,
+} from '@/lib/supabase/queries'
 // import { redirect } from 'next/navigation' // TEMPORARILY DISABLED FOR DEMO
 import { MaintenanceTable } from '@/components/maintenance/maintenance-table'
 import { AddMaintenanceButton } from '@/components/maintenance/add-maintenance-button'
 import { MaintenanceFilters } from '@/components/maintenance/maintenance-filters'
-import type { MaintenanceTask, Property, Vendor } from '@/types/database'
-
-interface MaintenanceWithDetails extends MaintenanceTask {
-  properties: Property
-  vendors: Vendor | null
-}
 
 export default async function MaintenancePage() {
-  const supabase = await createClient()
-
   // TEMPORARILY DISABLED FOR DEMO
   // const {
   //   data: { user },
@@ -22,47 +18,33 @@ export default async function MaintenancePage() {
   //   redirect('/login')
   // }
 
-  // Fetch maintenance tasks with property and vendor info
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: tasks } = (await (supabase
-    .from('maintenance_tasks')
-    .select('*, properties(*), vendors(*)')
-    .order('scheduled_date', { ascending: true }) as any)) as { data: MaintenanceWithDetails[] | null }
-
-  // Fetch properties for the filter/form
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: properties } = (await (supabase
-    .from('properties')
-    .select('id, name')
-    .order('name') as any)) as { data: Pick<Property, 'id' | 'name'>[] | null }
-
-  // Fetch vendors for the form
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: vendors } = (await (supabase
-    .from('vendors')
-    .select('id, name, service_type')
-    .order('name') as any)) as { data: Pick<Vendor, 'id' | 'name' | 'service_type'>[] | null }
+  // Fetch maintenance tasks with property and vendor info, plus properties and vendors for forms
+  const [tasks, properties, vendors] = await Promise.all([
+    getMaintenanceTasksWithDetails(),
+    getProperties(),
+    getVendors(),
+  ])
 
   // Calculate stats
   const now = new Date()
   const today = now.toISOString().split('T')[0]
 
-  const pendingTasks = tasks?.filter(
+  const pendingTasks = tasks.filter(
     (t) => !t.completed_date && t.scheduled_date >= today
-  ).length || 0
+  ).length
 
-  const overdueTasks = tasks?.filter(
+  const overdueTasks = tasks.filter(
     (t) => !t.completed_date && t.scheduled_date < today
-  ).length || 0
+  ).length
 
-  const completedThisMonth = tasks?.filter((t) => {
+  const completedThisMonth = tasks.filter((t) => {
     if (!t.completed_date) return false
     const completedDate = new Date(t.completed_date)
     return (
       completedDate.getMonth() === now.getMonth() &&
       completedDate.getFullYear() === now.getFullYear()
     )
-  }).length || 0
+  }).length
 
   return (
     <div className="space-y-6">
@@ -74,8 +56,8 @@ export default async function MaintenancePage() {
           </p>
         </div>
         <AddMaintenanceButton
-          properties={properties || []}
-          vendors={vendors || []}
+          properties={properties}
+          vendors={vendors}
         />
       </div>
 
@@ -95,12 +77,12 @@ export default async function MaintenancePage() {
         </div>
       </div>
 
-      <MaintenanceFilters properties={properties || []} />
+      <MaintenanceFilters properties={properties} />
 
       <MaintenanceTable
-        tasks={tasks || []}
-        properties={properties || []}
-        vendors={vendors || []}
+        tasks={tasks}
+        properties={properties}
+        vendors={vendors}
       />
     </div>
   )

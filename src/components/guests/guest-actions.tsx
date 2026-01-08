@@ -29,7 +29,7 @@ import {
   Phone,
   Link2,
 } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
+import { getSupabaseBrowser } from '@/lib/supabase/client-queries'
 import { toast } from 'sonner'
 import { EditGuestDialog } from './edit-guest-dialog'
 import { SendMessageDialog } from './send-message-dialog'
@@ -47,11 +47,10 @@ export function GuestActions({ guest: initialGuest }: GuestActionsProps) {
   const [showDelete, setShowDelete] = useState(false)
   const [showPortalLink, setShowPortalLink] = useState(false)
   const router = useRouter()
-  const supabase = createClient()
+  const supabase = getSupabaseBrowser()
 
   const handleDelete = async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error } = await (supabase.from('guests') as any)
+    const { error } = await supabase.from('guests')
       .delete()
       .eq('id', guest.id)
 
@@ -83,7 +82,7 @@ export function GuestActions({ guest: initialGuest }: GuestActionsProps) {
         </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="icon">
+            <Button variant="outline" size="icon" aria-label="More guest actions">
               <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>

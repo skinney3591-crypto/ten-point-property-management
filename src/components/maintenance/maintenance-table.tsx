@@ -38,7 +38,7 @@ import {
   CheckCircle2,
   RefreshCw,
 } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
+import { getSupabaseBrowser } from '@/lib/supabase/client-queries'
 import { toast } from 'sonner'
 import { EditMaintenanceDialog } from './edit-maintenance-dialog'
 import type { MaintenanceTask, Property, Vendor } from '@/types/database'
@@ -75,14 +75,13 @@ export function MaintenanceTable({ tasks: initialTasks, properties, vendors }: M
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [editTask, setEditTask] = useState<MaintenanceWithDetails | null>(null)
   const router = useRouter()
-  const supabase = createClient()
+  const supabase = getSupabaseBrowser()
 
   const handleComplete = async (task: MaintenanceWithDetails) => {
     const newCompletedDate = task.completed_date ? null : new Date().toISOString().split('T')[0]
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error } = await (supabase.from('maintenance_tasks') as any)
-      .update({ completed_date: newCompletedDate })
+    const { error } = await supabase.from('maintenance_tasks')
+      .update({ completed_date: newCompletedDate } as never)
       .eq('id', task.id)
 
     if (error) {
@@ -100,8 +99,7 @@ export function MaintenanceTable({ tasks: initialTasks, properties, vendors }: M
   const handleDelete = async () => {
     if (!deleteId) return
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error } = await (supabase.from('maintenance_tasks') as any)
+    const { error } = await supabase.from('maintenance_tasks')
       .delete()
       .eq('id', deleteId)
 
@@ -215,7 +213,7 @@ export function MaintenanceTable({ tasks: initialTasks, properties, vendors }: M
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
+                        <Button variant="ghost" size="icon" aria-label="Open task menu">
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>

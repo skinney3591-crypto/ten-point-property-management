@@ -1,14 +1,11 @@
-import { createClient } from '@/lib/supabase/server'
+import { getVendors } from '@/lib/supabase/queries'
 // import { redirect } from 'next/navigation' // TEMPORARILY DISABLED FOR DEMO
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { VendorsTable } from '@/components/settings/vendors-table'
 import { AddVendorButton } from '@/components/settings/add-vendor-button'
-import type { Vendor } from '@/types/database'
 
 export default async function SettingsPage() {
-  const supabase = await createClient()
-
   // TEMPORARILY DISABLED FOR DEMO
   // const {
   //   data: { user },
@@ -19,11 +16,7 @@ export default async function SettingsPage() {
   // }
 
   // Fetch vendors
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: vendors } = (await (supabase
-    .from('vendors')
-    .select('*')
-    .order('name') as any)) as { data: Vendor[] | null }
+  const vendors = await getVendors()
 
   return (
     <div className="space-y-6">
@@ -51,7 +44,7 @@ export default async function SettingsPage() {
             </div>
             <AddVendorButton />
           </div>
-          <VendorsTable vendors={vendors || []} />
+          <VendorsTable vendors={vendors} />
         </TabsContent>
 
         <TabsContent value="account" className="mt-6">

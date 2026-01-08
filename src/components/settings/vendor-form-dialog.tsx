@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { createClient } from '@/lib/supabase/client'
+import { getSupabaseBrowser } from '@/lib/supabase/client-queries'
 import { toast } from 'sonner'
 import type { VendorInsert } from '@/types/database'
 
@@ -54,7 +54,7 @@ const serviceTypes = [
 export function VendorFormDialog({ open, onOpenChange }: VendorFormDialogProps) {
   const [loading, setLoading] = useState(false)
   const router = useRouter()
-  const supabase = createClient()
+  const supabase = getSupabaseBrowser()
 
   const {
     register,
@@ -94,8 +94,7 @@ export function VendorFormDialog({ open, onOpenChange }: VendorFormDialogProps) 
       notes: data.notes || null,
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error } = await (supabase.from('vendors') as any).insert(vendor)
+    const { error } = await supabase.from('vendors').insert(vendor as never)
 
     if (error) {
       toast.error('Failed to create vendor')

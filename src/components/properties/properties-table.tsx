@@ -28,7 +28,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { MoreHorizontal, Pencil, Trash2, Eye, Calendar } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
+import { getSupabaseBrowser } from '@/lib/supabase/client-queries'
 import { toast } from 'sonner'
 import type { Property } from '@/types/database'
 import { EditPropertyDialog } from './edit-property-dialog'
@@ -42,16 +42,15 @@ export function PropertiesTable({ properties: initialProperties }: PropertiesTab
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [editProperty, setEditProperty] = useState<Property | null>(null)
   const router = useRouter()
-  const supabase = createClient()
+  const supabase = getSupabaseBrowser()
 
   const handleDelete = async () => {
     if (!deleteId) return
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error } = await (supabase
+    const { error } = await supabase
       .from('properties')
       .delete()
-      .eq('id', deleteId) as any)
+      .eq('id', deleteId)
 
     if (error) {
       toast.error('Failed to delete property')
@@ -122,7 +121,7 @@ export function PropertiesTable({ properties: initialProperties }: PropertiesTab
                 <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon">
+                      <Button variant="ghost" size="icon" aria-label="Open property menu">
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>

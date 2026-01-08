@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from 'react'
 import { Calendar, dateFnsLocalizer, Views } from 'react-big-calendar'
 import { format, parse, startOfWeek, getDay } from 'date-fns'
 import { enUS } from 'date-fns/locale'
-import { createClient } from '@/lib/supabase/client'
+import { getSupabaseBrowser } from '@/lib/supabase/client-queries'
 import { Button } from '@/components/ui/button'
 import { LogIn, LogOut, Wrench, CalendarDays } from 'lucide-react'
 import type { Booking, Property, MaintenanceTask } from '@/types/database'
@@ -66,38 +66,35 @@ export function DashboardCalendar() {
   const [showCheckIn, setShowCheckIn] = useState(false)
   const [showCheckOut, setShowCheckOut] = useState(false)
   const [showMaintenance, setShowMaintenance] = useState(true)
-  const supabase = createClient()
+  const supabase = getSupabaseBrowser()
 
   useEffect(() => {
     async function fetchData() {
       setLoading(true)
 
       // Fetch properties
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data: propertiesData } = await (supabase
+      const { data: propertiesData } = await supabase
         .from('properties')
         .select('*')
-        .order('name') as any) as { data: Property[] | null }
+        .order('name')
 
       if (propertiesData) {
         setProperties(propertiesData)
       }
 
       // Fetch bookings with property info
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data: bookingsData } = await (supabase
+      const { data: bookingsData } = await supabase
         .from('bookings')
         .select('*, properties(*)')
         .neq('status', 'cancelled')
-        .order('check_in') as any) as { data: (Booking & { properties: Property })[] | null }
+        .order('check_in') as { data: (Booking & { properties: Property })[] | null }
 
       // Fetch maintenance tasks
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data: maintenanceData } = await (supabase
+      const { data: maintenanceData } = await supabase
         .from('maintenance_tasks')
         .select('*, properties(*)')
         .is('completed_date', null)
-        .order('scheduled_date') as any) as { data: (MaintenanceTask & { properties: Property })[] | null }
+        .order('scheduled_date') as { data: (MaintenanceTask & { properties: Property })[] | null }
 
       const allEvents: CalendarEvent[] = []
 

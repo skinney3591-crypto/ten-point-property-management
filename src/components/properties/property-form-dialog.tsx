@@ -16,7 +16,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { createClient } from '@/lib/supabase/client'
+import { getSupabaseBrowser } from '@/lib/supabase/client-queries'
 import { toast } from 'sonner'
 import type { PropertyInsert } from '@/types/database'
 
@@ -39,7 +39,7 @@ interface FormData {
 export function PropertyFormDialog({ open, onOpenChange }: PropertyFormDialogProps) {
   const [loading, setLoading] = useState(false)
   const router = useRouter()
-  const supabase = createClient()
+  const supabase = getSupabaseBrowser()
 
   const {
     register,
@@ -84,8 +84,7 @@ export function PropertyFormDialog({ open, onOpenChange }: PropertyFormDialogPro
       vrbo_ical_url: data.vrbo_ical_url || null,
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error } = await (supabase.from('properties') as any).insert(property)
+    const { error } = await supabase.from('properties').insert(property as never)
 
     if (error) {
       toast.error('Failed to create property')

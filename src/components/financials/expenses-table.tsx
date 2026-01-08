@@ -39,7 +39,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { MoreHorizontal, Trash2, Search, Receipt } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
+import { getSupabaseBrowser } from '@/lib/supabase/client-queries'
 import { toast } from 'sonner'
 import type { Expense, Property, Vendor } from '@/types/database'
 
@@ -78,7 +78,7 @@ export function ExpensesTable({ expenses: initialExpenses, properties }: Expense
   const [propertyFilter, setPropertyFilter] = useState<string>('all')
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const router = useRouter()
-  const supabase = createClient()
+  const supabase = getSupabaseBrowser()
 
   // Filter expenses
   const filteredExpenses = expenses.filter((expense) => {
@@ -103,8 +103,7 @@ export function ExpensesTable({ expenses: initialExpenses, properties }: Expense
   const handleDelete = async () => {
     if (!deleteId) return
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error } = await (supabase.from('expenses') as any)
+    const { error } = await supabase.from('expenses')
       .delete()
       .eq('id', deleteId)
 
@@ -220,7 +219,7 @@ export function ExpensesTable({ expenses: initialExpenses, properties }: Expense
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
+                        <Button variant="ghost" size="icon" aria-label="Open expense menu">
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>

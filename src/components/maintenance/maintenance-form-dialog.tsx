@@ -24,7 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { createClient } from '@/lib/supabase/client'
+import { getSupabaseBrowser } from '@/lib/supabase/client-queries'
 import { toast } from 'sonner'
 import type { Property, Vendor, MaintenanceTaskInsert } from '@/types/database'
 
@@ -71,7 +71,7 @@ export function MaintenanceFormDialog({
   const [loading, setLoading] = useState(false)
   const [isRecurring, setIsRecurring] = useState(false)
   const router = useRouter()
-  const supabase = createClient()
+  const supabase = getSupabaseBrowser()
 
   const {
     register,
@@ -111,8 +111,7 @@ export function MaintenanceFormDialog({
       recurrence_rule: isRecurring ? data.recurrence_rule : null,
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error } = await (supabase.from('maintenance_tasks') as any).insert(task)
+    const { error } = await supabase.from('maintenance_tasks').insert(task as never)
 
     if (error) {
       toast.error('Failed to create task')

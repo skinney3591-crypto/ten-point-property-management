@@ -15,7 +15,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { createClient } from '@/lib/supabase/client'
+import { getSupabaseBrowser } from '@/lib/supabase/client-queries'
 import { toast } from 'sonner'
 import type { GuestInsert } from '@/types/database'
 
@@ -34,7 +34,7 @@ interface FormData {
 export function GuestFormDialog({ open, onOpenChange }: GuestFormDialogProps) {
   const [loading, setLoading] = useState(false)
   const router = useRouter()
-  const supabase = createClient()
+  const supabase = getSupabaseBrowser()
 
   const {
     register,
@@ -71,8 +71,7 @@ export function GuestFormDialog({ open, onOpenChange }: GuestFormDialogProps) {
       notes: data.notes || null,
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error } = await (supabase.from('guests') as any).insert(guest)
+    const { error } = await supabase.from('guests').insert(guest as never)
 
     if (error) {
       toast.error('Failed to create guest')

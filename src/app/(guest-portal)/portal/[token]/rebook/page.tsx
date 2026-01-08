@@ -19,7 +19,7 @@ import {
 import { Calendar, Send, CheckCircle, Home } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
-import type { Property, Guest } from '@/types/database'
+import type { Property, Guest, GuestCommunicationInsert } from '@/types/database'
 
 interface FormData {
   property_id: string
@@ -61,27 +61,36 @@ export default function RebookPage({
       const { token: t } = await params
       setToken(t)
 
-      // Get guest from token
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data: tokenData } = await (supabase
+      // Get guest from token - using typed queries
+      const { data: tokenData, error: tokenError } = await supabase
         .from('guest_portal_tokens')
-        .select('*, guests(*)')
+        .select('guest_id')
         .eq('token', t)
-        .single() as any)
+        .single() as { data: { guest_id: string } | null; error: unknown }
 
-      if (tokenData?.guests) {
-        setGuest(tokenData.guests)
+      if (tokenError || !tokenData) {
+        console.error('Failed to fetch token:', tokenError)
+        return
       }
 
-      // Get available properties
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data: props } = await (supabase
+      const { data: guestData, error: guestError } = await supabase
+        .from('guests')
+        .select('*')
+        .eq('id', tokenData.guest_id)
+        .single()
+
+      if (!guestError && guestData) {
+        setGuest(guestData as Guest)
+      }
+
+      // Get available properties - using typed query
+      const { data: props, error: propsError } = await supabase
         .from('properties')
         .select('*')
-        .order('name') as any)
+        .order('name')
 
-      if (props) {
-        setProperties(props)
+      if (!propsError && props) {
+        setProperties(props as Property[])
       }
     }
     init()
@@ -92,10 +101,9 @@ export default function RebookPage({
 
     setLoading(true)
 
-    // Log the booking request as a communication
+    // Log the booking request as a communication - using typed insert
     // In production, this would also send an email notification to the property manager
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error } = await (supabase.from('guest_communications') as any).insert({
+    const communication: GuestCommunicationInsert = {
       guest_id: guest.id,
       type: 'email',
       direction: 'in',
@@ -109,7 +117,11 @@ Number of guests: ${data.guests}
 Message from guest:
 ${data.message || 'No additional message'}`,
       sent_at: new Date().toISOString(),
-    })
+    }
+
+    const { error } = await supabase
+      .from('guest_communications')
+      .insert(communication as never)
 
     if (error) {
       toast.error('Failed to submit request')

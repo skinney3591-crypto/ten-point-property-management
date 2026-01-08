@@ -32,8 +32,8 @@ export async function POST(request: Request) {
     }
 
     // Insert the inquiry
-    const { data: inquiry, error: insertError } = await (supabase
-      .from('inquiries') as any)
+    const { data: inquiry, error: insertError } = await supabase
+      .from('inquiries')
       .insert({
         property_id,
         name,
@@ -43,8 +43,8 @@ export async function POST(request: Request) {
         check_out: check_out || null,
         guests: guests || null,
         message,
-        status: 'new',
-      })
+        status: 'new' as const,
+      } as never)
       .select()
       .single()
 

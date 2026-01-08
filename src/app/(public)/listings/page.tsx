@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { PropertyCard } from '@/components/public/property-card'
 import { DeerHead } from '@/components/icons/deer-head'
+import type { Property } from '@/types/database'
 
 export const metadata = {
   title: 'Montana Vacation Rentals | Ten Point Properties',
@@ -10,11 +11,12 @@ export const metadata = {
 export default async function ListingsPage() {
   const supabase = await createClient()
 
-  const { data: properties, error } = await (supabase
-    .from('properties') as any)
+  // Fetch public properties with typed query
+  const { data: properties, error } = await supabase
+    .from('properties')
     .select('id, name, address, description, photos, nightly_rate, amenities')
     .eq('is_public', true)
-    .order('name')
+    .order('name') as { data: Pick<Property, 'id' | 'name' | 'address' | 'description' | 'photos' | 'nightly_rate' | 'amenities'>[] | null; error: unknown }
 
   if (error) {
     console.error('Error fetching properties:', error)
@@ -45,16 +47,16 @@ export default async function ListingsPage() {
 
           {properties && properties.length > 0 ? (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {properties.map((property: any) => (
+              {properties.map((property) => (
                 <PropertyCard
                   key={property.id}
                   id={property.id}
                   name={property.name}
                   address={property.address}
                   description={property.description}
-                  photos={property.photos || []}
+                  photos={(property.photos as string[]) || []}
                   nightly_rate={property.nightly_rate}
-                  amenities={property.amenities || []}
+                  amenities={(property.amenities as string[]) || []}
                 />
               ))}
             </div>

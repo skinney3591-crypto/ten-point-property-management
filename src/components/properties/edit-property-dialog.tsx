@@ -16,7 +16,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Checkbox } from '@/components/ui/checkbox'
-import { createClient } from '@/lib/supabase/client'
+import { getSupabaseBrowser } from '@/lib/supabase/client-queries'
 import { toast } from 'sonner'
 import type { Property } from '@/types/database'
 
@@ -48,7 +48,7 @@ export function EditPropertyDialog({
   onSuccess,
 }: EditPropertyDialogProps) {
   const [loading, setLoading] = useState(false)
-  const supabase = createClient()
+  const supabase = getSupabaseBrowser()
 
   const {
     register,
@@ -97,12 +97,11 @@ export function EditPropertyDialog({
       photos: photosArray,
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: updated, error } = await (supabase.from('properties') as any)
-      .update(updates)
+    const { data: updated, error } = await supabase.from('properties')
+      .update(updates as never)
       .eq('id', property.id)
       .select()
-      .single() as { data: Property | null; error: Error | null }
+      .single() as { data: Property | null; error: unknown }
 
     if (error) {
       toast.error('Failed to update property')

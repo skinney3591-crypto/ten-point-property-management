@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { getGuestWithFullData, type GuestWithFullData } from '@/lib/supabase/queries'
 import { notFound } from 'next/navigation'
 // import { redirect } from 'next/navigation' // TEMPORARILY DISABLED FOR DEMO
 import Link from 'next/link'
@@ -26,16 +26,6 @@ import {
 } from 'lucide-react'
 import { GuestActions } from '@/components/guests/guest-actions'
 import { CommunicationLog } from '@/components/guests/communication-log'
-import type { Guest, Booking, Property, GuestCommunication } from '@/types/database'
-
-interface BookingWithProperty extends Booking {
-  properties: Property
-}
-
-interface GuestWithData extends Guest {
-  bookings: BookingWithProperty[]
-  guest_communications: GuestCommunication[]
-}
 
 export default async function GuestDetailPage({
   params,
@@ -43,7 +33,6 @@ export default async function GuestDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const supabase = await createClient()
 
   // TEMPORARILY DISABLED FOR DEMO
   // const {
@@ -55,12 +44,7 @@ export default async function GuestDetailPage({
   // }
 
   // Fetch guest with bookings and communications
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: guest } = (await (supabase
-    .from('guests')
-    .select('*, bookings(*, properties(*)), guest_communications(*)')
-    .eq('id', id)
-    .single() as any)) as { data: GuestWithData | null }
+  const guest = await getGuestWithFullData(id)
 
   if (!guest) {
     notFound()
@@ -112,7 +96,7 @@ export default async function GuestDetailPage({
       {/* Header */}
       <div className="flex items-center gap-4">
         <Link href="/guests">
-          <Button variant="ghost" size="icon">
+          <Button variant="ghost" size="icon" aria-label="Back to guests">
             <ArrowLeft className="h-4 w-4" />
           </Button>
         </Link>

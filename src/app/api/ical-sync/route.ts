@@ -3,10 +3,10 @@ import { createClient } from '@/lib/supabase/server'
 import {
   parseIcalData,
   fetchIcalData,
-  determineBookingSource,
   isBlockedEvent,
 } from '@/lib/ical-parser'
-import type { Property, BookingInsert } from '@/types/database'
+import { getPropertyById, createBooking } from '@/lib/supabase/queries'
+import type { BookingInsert } from '@/types/database'
 
 export async function POST(request: Request) {
   try {
@@ -28,14 +28,15 @@ export async function POST(request: Request) {
     }
 
     // Fetch the property
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: property, error: propertyError } = (await (supabase
-      .from('properties')
-      .select('*')
-      .eq('id', propertyId)
-      .single() as any)) as { data: Property | null; error: Error | null }
+    let property
+    try {
+      property = await getPropertyById(propertyId)
+    } catch (err) {
+      console.error('Error fetching property:', err)
+      return NextResponse.json({ error: 'Failed to fetch property' }, { status: 500 })
+    }
 
-    if (propertyError || !property) {
+    if (!property) {
       return NextResponse.json({ error: 'Property not found' }, { status: 404 })
     }
 
@@ -81,13 +82,12 @@ export async function POST(request: Request) {
           }
 
           // Check if this booking already exists
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const { data: existing } = (await (supabase
+          const { data: existing } = await supabase
             .from('bookings')
             .select('id')
             .eq('property_id', propertyId)
             .eq('external_id', parsed.externalId)
-            .single() as any)) as { data: { id: string } | null }
+            .single()
 
           if (existing) {
             // Booking already exists, skip
@@ -95,7 +95,7 @@ export async function POST(request: Request) {
           }
 
           // Create new booking
-          const booking: BookingInsert = {
+          const bookingData: BookingInsert = {
             property_id: propertyId,
             source,
             check_in: parsed.checkIn.toISOString().split('T')[0],
@@ -105,12 +105,10 @@ export async function POST(request: Request) {
             status: 'confirmed',
           }
 
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const { error: insertError } = await (supabase.from('bookings') as any).insert(booking)
-
-          if (!insertError) {
+          try {
+            await createBooking(bookingData)
             totalImported++
-          } else {
+          } catch (insertError) {
             console.error('Failed to insert booking:', insertError)
           }
         }

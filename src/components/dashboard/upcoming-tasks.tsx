@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { getSupabaseBrowser } from '@/lib/supabase/client-queries'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -27,7 +27,7 @@ interface TaskItem {
 export function UpcomingTasks() {
   const [tasks, setTasks] = useState<TaskItem[]>([])
   const [loading, setLoading] = useState(true)
-  const supabase = createClient()
+  const supabase = getSupabaseBrowser()
 
   useEffect(() => {
     async function fetchUpcomingTasks() {
@@ -39,8 +39,8 @@ export function UpcomingTasks() {
       const allTasks: TaskItem[] = []
 
       // Fetch maintenance tasks for the next week
-      const { data: maintenanceTasks } = await (supabase
-        .from('maintenance_tasks') as any)
+      const { data: maintenanceTasks } = await supabase
+        .from('maintenance_tasks')
         .select(`
           id,
           type,
@@ -70,8 +70,8 @@ export function UpcomingTasks() {
       }
 
       // Fetch check-ins for the next week
-      const { data: checkIns } = await (supabase
-        .from('bookings') as any)
+      const { data: checkIns } = await supabase
+        .from('bookings')
         .select(`
           id,
           check_in,
@@ -95,8 +95,8 @@ export function UpcomingTasks() {
       }
 
       // Fetch check-outs for the next week
-      const { data: checkOuts } = await (supabase
-        .from('bookings') as any)
+      const { data: checkOuts } = await supabase
+        .from('bookings')
         .select(`
           id,
           check_out,

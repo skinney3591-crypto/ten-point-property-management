@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { createClient } from '@/lib/supabase/client'
+import { getSupabaseBrowser } from '@/lib/supabase/client-queries'
 import { toast } from 'sonner'
 import type { Guest } from '@/types/database'
 
@@ -39,7 +39,7 @@ export function EditGuestDialog({
   onSuccess,
 }: EditGuestDialogProps) {
   const [loading, setLoading] = useState(false)
-  const supabase = createClient()
+  const supabase = getSupabaseBrowser()
 
   const {
     register,
@@ -64,12 +64,11 @@ export function EditGuestDialog({
       notes: data.notes || null,
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: updated, error } = await (supabase.from('guests') as any)
-      .update(updates)
+    const { data: updated, error } = await supabase.from('guests')
+      .update(updates as never)
       .eq('id', guest.id)
       .select()
-      .single() as { data: Guest | null; error: Error | null }
+      .single() as { data: Guest | null; error: unknown }
 
     if (error) {
       toast.error('Failed to update guest')

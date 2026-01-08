@@ -21,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { createClient } from '@/lib/supabase/client'
+import { getSupabaseBrowser } from '@/lib/supabase/client-queries'
 import { toast } from 'sonner'
 import type { Vendor } from '@/types/database'
 
@@ -59,7 +59,7 @@ export function EditVendorDialog({
   onSuccess,
 }: EditVendorDialogProps) {
   const [loading, setLoading] = useState(false)
-  const supabase = createClient()
+  const supabase = getSupabaseBrowser()
 
   const {
     register,
@@ -87,12 +87,11 @@ export function EditVendorDialog({
       notes: data.notes || null,
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: updated, error } = await (supabase.from('vendors') as any)
-      .update(updates)
+    const { data: updated, error } = await supabase.from('vendors')
+      .update(updates as never)
       .eq('id', vendor.id)
       .select()
-      .single() as { data: Vendor | null; error: Error | null }
+      .single() as { data: Vendor | null; error: unknown }
 
     if (error) {
       toast.error('Failed to update vendor')

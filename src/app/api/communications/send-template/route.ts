@@ -17,7 +17,8 @@ import {
   postCheckoutSms,
   portalLinkSms,
 } from '@/lib/sms-templates'
-import type { Guest, Booking, Property, GuestCommunicationInsert } from '@/types/database'
+import { getGuestById, createCommunication } from '@/lib/supabase/queries'
+import type { Booking, Property, GuestCommunicationInsert } from '@/types/database'
 
 type TemplateType =
   | 'booking_confirmation'
@@ -60,12 +61,13 @@ export async function POST(request: NextRequest) {
   }
 
   // Get guest info
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: guest } = await (supabase
-    .from('guests')
-    .select('*')
-    .eq('id', guestId)
-    .single() as any) as { data: Guest | null }
+  let guest
+  try {
+    guest = await getGuestById(guestId)
+  } catch (err) {
+    console.error('Error fetching guest:', err)
+    return NextResponse.json({ error: 'Failed to fetch guest' }, { status: 500 })
+  }
 
   if (!guest) {
     return NextResponse.json({ error: 'Guest not found' }, { status: 404 })
@@ -76,7 +78,7 @@ export async function POST(request: NextRequest) {
   let property: Property | null = null
 
   if (bookingId) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data } = await (supabase
       .from('bookings')
       .select('*, properties(*)')
@@ -146,8 +148,11 @@ export async function POST(request: NextRequest) {
         content: `[Template: ${template}]`,
         sent_at: new Date().toISOString(),
       }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (supabase.from('guest_communications') as any).insert(emailLog)
+      try {
+        await createCommunication(emailLog)
+      } catch (err) {
+        console.error('Failed to log email communication:', err)
+      }
     }
   }
 
@@ -204,8 +209,11 @@ export async function POST(request: NextRequest) {
         content: smsTemplate.body,
         sent_at: new Date().toISOString(),
       }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (supabase.from('guest_communications') as any).insert(smsLog)
+      try {
+        await createCommunication(smsLog)
+      } catch (err) {
+        console.error('Failed to log SMS communication:', err)
+      }
     }
   }
 

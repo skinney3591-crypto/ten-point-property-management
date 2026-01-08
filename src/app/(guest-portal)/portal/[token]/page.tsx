@@ -13,6 +13,7 @@ import {
   ChevronRight,
   Sparkles,
 } from 'lucide-react'
+import { getPortalTokenByToken, getGuestById } from '@/lib/supabase/queries'
 import type { Guest, Booking, Property } from '@/types/database'
 
 interface BookingWithProperty extends Booking {
@@ -27,28 +28,26 @@ export default async function PortalHomePage({
   const { token } = await params
   const supabase = await createClient()
 
-  // Get guest from token
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: tokenData } = await (supabase
-    .from('guest_portal_tokens')
-    .select('*, guests(*)')
-    .eq('token', token)
-    .single() as any) as { data: { guests: Guest } | null }
+  // Get guest from token using typed helper
+  const tokenData = await getPortalTokenByToken(token)
 
   if (!tokenData) {
     notFound()
   }
 
-  const guest = tokenData.guests
+  const guest = await getGuestById(tokenData.guest_id)
 
-  // Get guest's bookings
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: bookings } = await (supabase
+  if (!guest) {
+    notFound()
+  }
+
+  // Get guest's bookings with properties (complex query without helper)
+  const { data: bookings } = await supabase
     .from('bookings')
     .select('*, properties(*)')
     .eq('guest_id', guest.id)
     .neq('status', 'cancelled')
-    .order('check_in', { ascending: false }) as any) as {
+    .order('check_in', { ascending: false }) as {
     data: BookingWithProperty[] | null
   }
 

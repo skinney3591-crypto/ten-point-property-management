@@ -19,7 +19,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { MoreHorizontal, Trash2, User } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
+import { getSupabaseBrowser } from '@/lib/supabase/client-queries'
 import { toast } from 'sonner'
 import type { Booking, Guest } from '@/types/database'
 
@@ -48,14 +48,13 @@ const sourceColors: Record<string, string> = {
 
 export function PropertyBookingsTable({ bookings: initialBookings, propertyId }: PropertyBookingsTableProps) {
   const [bookings, setBookings] = useState(initialBookings)
-  const supabase = createClient()
+  const supabase = getSupabaseBrowser()
 
   const handleDelete = async (id: string) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error } = await (supabase
+    const { error } = await supabase
       .from('bookings')
       .delete()
-      .eq('id', id) as any)
+      .eq('id', id)
 
     if (error) {
       toast.error('Failed to delete booking')
@@ -121,7 +120,7 @@ export function PropertyBookingsTable({ bookings: initialBookings, propertyId }:
               <TableCell>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon">
+                    <Button variant="ghost" size="icon" aria-label="Open booking menu">
                       <MoreHorizontal className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>

@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { getPropertyById, getBookingsByPropertyWithGuest } from '@/lib/supabase/queries'
 import { notFound } from 'next/navigation'
 // import { redirect } from 'next/navigation' // TEMPORARILY DISABLED FOR DEMO
 import Link from 'next/link'
@@ -10,7 +10,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { PropertyBookingsTable } from '@/components/properties/property-bookings-table'
 import { AddBookingButton } from '@/components/bookings/add-booking-button'
 import { SyncCalendarButton } from '@/components/properties/sync-calendar-button'
-import type { Property, Booking } from '@/types/database'
 
 interface Props {
   params: Promise<{ id: string }>
@@ -18,7 +17,6 @@ interface Props {
 
 export default async function PropertyDetailPage({ params }: Props) {
   const { id } = await params
-  const supabase = await createClient()
 
   // TEMPORARILY DISABLED FOR DEMO
   // const {
@@ -29,38 +27,28 @@ export default async function PropertyDetailPage({ params }: Props) {
   //   redirect('/login')
   // }
 
-  // Fetch property
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: property } = (await (supabase
-    .from('properties')
-    .select('*')
-    .eq('id', id)
-    .single() as any)) as { data: Property | null }
+  // Fetch property and bookings in parallel
+  const [property, bookings] = await Promise.all([
+    getPropertyById(id),
+    getBookingsByPropertyWithGuest(id),
+  ])
 
   if (!property) {
     notFound()
   }
 
-  // Fetch bookings for this property
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: bookings } = (await (supabase
-    .from('bookings')
-    .select('*, guests(*)')
-    .eq('property_id', id)
-    .order('check_in', { ascending: false }) as any)) as { data: Booking[] | null }
-
   // Calculate stats
   const now = new Date()
-  const upcomingBookings = bookings?.filter(
+  const upcomingBookings = bookings.filter(
     (b) => new Date(b.check_in) >= now && b.status !== 'cancelled'
-  ).length || 0
-  const pastBookings = bookings?.filter(
+  ).length
+  const pastBookings = bookings.filter(
     (b) => new Date(b.check_out) < now
-  ).length || 0
-  const totalRevenue = bookings?.reduce(
+  ).length
+  const totalRevenue = bookings.reduce(
     (sum, b) => sum + (b.payout_amount || b.total_amount || 0),
     0
-  ) || 0
+  )
 
   return (
     <div className="space-y-6">
@@ -69,7 +57,7 @@ export default async function PropertyDetailPage({ params }: Props) {
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <Link href="/properties">
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" aria-label="Back to properties">
                 <ArrowLeft className="h-4 w-4" />
               </Button>
             </Link>
@@ -143,7 +131,7 @@ export default async function PropertyDetailPage({ params }: Props) {
         </TabsList>
 
         <TabsContent value="bookings" className="mt-6">
-          <PropertyBookingsTable bookings={bookings || []} propertyId={property.id} />
+          <PropertyBookingsTable bookings={bookings} propertyId={property.id} />
         </TabsContent>
 
         <TabsContent value="details" className="mt-6">

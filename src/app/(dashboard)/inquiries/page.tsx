@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { getInquiriesWithProperty } from '@/lib/supabase/queries'
 // import { redirect } from 'next/navigation' // TEMPORARILY DISABLED FOR DEMO
 import { InquiriesTable } from '@/components/inquiries/inquiries-table'
 
@@ -7,8 +7,6 @@ export const metadata = {
 }
 
 export default async function InquiriesPage() {
-  const supabase = await createClient()
-
   // TEMPORARILY DISABLED FOR DEMO
   // const {
   //   data: { user },
@@ -19,20 +17,7 @@ export default async function InquiriesPage() {
   // }
 
   // Fetch inquiries for user's properties
-  const { data: inquiries, error } = await (supabase
-    .from('inquiries') as any)
-    .select(`
-      *,
-      properties (
-        id,
-        name
-      )
-    `)
-    .order('created_at', { ascending: false })
-
-  if (error) {
-    console.error('Error fetching inquiries:', error)
-  }
+  const inquiries = await getInquiriesWithProperty()
 
   return (
     <div className="space-y-6">
@@ -43,7 +28,7 @@ export default async function InquiriesPage() {
         </p>
       </div>
 
-      <InquiriesTable inquiries={inquiries || []} />
+      <InquiriesTable inquiries={inquiries} />
     </div>
   )
 }

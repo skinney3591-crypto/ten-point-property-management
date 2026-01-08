@@ -29,7 +29,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { MoreHorizontal, Pencil, Trash2, Users, Mail, Phone } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
+import { getSupabaseBrowser } from '@/lib/supabase/client-queries'
 import { toast } from 'sonner'
 import { EditVendorDialog } from './edit-vendor-dialog'
 import type { Vendor } from '@/types/database'
@@ -53,13 +53,12 @@ export function VendorsTable({ vendors: initialVendors }: VendorsTableProps) {
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [editVendor, setEditVendor] = useState<Vendor | null>(null)
   const router = useRouter()
-  const supabase = createClient()
+  const supabase = getSupabaseBrowser()
 
   const handleDelete = async () => {
     if (!deleteId) return
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error } = await (supabase.from('vendors') as any)
+    const { error } = await supabase.from('vendors')
       .delete()
       .eq('id', deleteId)
 
@@ -139,7 +138,7 @@ export function VendorsTable({ vendors: initialVendors }: VendorsTableProps) {
                 <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon">
+                      <Button variant="ghost" size="icon" aria-label="Open vendor menu">
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>

@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 import { randomBytes } from 'crypto'
+import { deletePortalTokensByGuest, createPortalToken } from '@/lib/supabase/queries'
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient()
@@ -26,38 +27,31 @@ export async function POST(request: NextRequest) {
   const expiresAt = new Date()
   expiresAt.setDate(expiresAt.getDate() + 30)
 
-  // Delete any existing tokens for this guest
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  await (supabase.from('guest_portal_tokens') as any)
-    .delete()
-    .eq('guest_id', guestId)
+  try {
+    // Delete any existing tokens for this guest
+    await deletePortalTokensByGuest(guestId)
 
-  // Create new token
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data, error } = await (supabase.from('guest_portal_tokens') as any)
-    .insert({
+    // Create new token
+    const data = await createPortalToken({
       guest_id: guestId,
       token,
       expires_at: expiresAt.toISOString(),
     })
-    .select()
-    .single()
 
-  if (error) {
+    // Build the portal URL
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+    const portalUrl = `${baseUrl}/portal/${token}`
+
+    return NextResponse.json({
+      token: data.token,
+      url: portalUrl,
+      expiresAt: data.expires_at,
+    })
+  } catch (error) {
     console.error('Failed to create portal token:', error)
     return NextResponse.json(
       { error: 'Failed to generate portal link' },
       { status: 500 }
     )
   }
-
-  // Build the portal URL
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
-  const portalUrl = `${baseUrl}/portal/${token}`
-
-  return NextResponse.json({
-    token: data.token,
-    url: portalUrl,
-    expiresAt: data.expires_at,
-  })
 }

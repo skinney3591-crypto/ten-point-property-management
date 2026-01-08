@@ -4,8 +4,8 @@ import { PropertyGallery } from '@/components/public/property-gallery'
 import { AvailabilityCalendar } from '@/components/public/availability-calendar'
 import { InquiryForm } from '@/components/public/inquiry-form'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { MapPin, Clock, DollarSign, CheckCircle } from 'lucide-react'
+import type { Property } from '@/types/database'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -14,12 +14,14 @@ interface PageProps {
 export async function generateMetadata({ params }: PageProps) {
   const { id } = await params
   const supabase = await createClient()
-  const { data: property } = await (supabase
-    .from('properties') as any)
+
+  // Fetch property metadata with typed query
+  const { data: property } = await supabase
+    .from('properties')
     .select('name, description')
     .eq('id', id)
     .eq('is_public', true)
-    .single()
+    .single() as { data: { name: string; description: string | null } | null }
 
   if (!property) {
     return { title: 'Property Not Found' }
@@ -35,13 +37,13 @@ export default async function PropertyDetailPage({ params }: PageProps) {
   const { id } = await params
   const supabase = await createClient()
 
-  // Fetch property
-  const { data: property, error } = await (supabase
-    .from('properties') as any)
+  // Fetch property with typed query
+  const { data: property, error } = await supabase
+    .from('properties')
     .select('*')
     .eq('id', id)
     .eq('is_public', true)
-    .single()
+    .single() as { data: Property | null; error: unknown }
 
   if (error || !property) {
     notFound()
@@ -56,8 +58,8 @@ export default async function PropertyDetailPage({ params }: PageProps) {
     .gte('check_out', today)
     .neq('status', 'cancelled')
 
-  const photos = property.photos || []
-  const amenities = property.amenities || []
+  const photos = (property.photos as string[]) || []
+  const amenities = (property.amenities as string[]) || []
 
   return (
     <div className="min-h-screen">
